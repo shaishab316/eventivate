@@ -1,6 +1,7 @@
 import z from 'zod';
 import { TModelZod } from '../../../types/zod';
 import { EUserRole, Mail as TMail } from '../../../utils/db';
+import { exists } from '../../../utils/db/exists';
 
 /**
  * Mail Validations
@@ -32,6 +33,17 @@ export const MailValidations = {
     query: z.object({
       unread: z.string().transform(Boolean).default(false),
       remarks: z.enum(EUserRole).optional(),
+    }),
+  }),
+
+  /**
+   * Mark Mail as Read Validation
+   */
+  markMail: z.object({
+    body: z.object({
+      mail_id: z.string().refine(exists('mail'), {
+        error: ({ input }) => `Mail with id ${input} does not exist`,
+      }),
     }),
   }),
 };

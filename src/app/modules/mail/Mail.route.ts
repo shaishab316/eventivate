@@ -26,6 +26,43 @@ const admin = Router();
     purifyRequest(QueryValidations.list, MailValidations.getAllMail),
     MailControllers.getAllMail,
   );
+
+  /**
+   * Admin Mark Mail as Read
+   */
+  admin.post(
+    '/mark-as-read',
+    purifyRequest(MailValidations.markMail),
+    MailControllers.markAsRead,
+  );
+
+  /**
+   * Admin Mark Mail as Unread
+   */
+  admin.post(
+    '/mark-as-unread',
+    purifyRequest(MailValidations.markMail),
+    MailControllers.markAsUnread,
+  );
+
+  /**
+   * Admin Mark All Mail as Read
+   */
+  admin.post('/mark-as-read-all', MailControllers.markAsReadAll);
+
+  /**
+   * Admin Delete Mail
+   */
+  admin.delete('/', MailControllers.deleteReadMails);
+
+  /**
+   * Admin Delete Single Mail
+   */
+  admin.delete(
+    '/delete-single-mail',
+    purifyRequest(MailValidations.markMail),
+    MailControllers.deleteMail,
+  );
 }
 
 export const MailRoutes = {

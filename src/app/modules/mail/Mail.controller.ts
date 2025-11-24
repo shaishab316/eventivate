@@ -27,4 +27,61 @@ export const MailControllers = {
       data: mails,
     };
   }),
+
+  /**
+   * Mark Mail as Read
+   */
+  markAsRead: catchAsync(async ({ body }) => {
+    await MailServices.markAsRead(body);
+
+    return {
+      message: 'Mails marked as read successfully',
+    };
+  }),
+
+  /**
+   * Mark Mail as Unread
+   */
+  markAsUnread: catchAsync(async ({ body }) => {
+    await MailServices.markAsUnread(body);
+
+    return {
+      message: 'Mails marked as unread successfully',
+    };
+  }),
+
+  /**
+   * Mark All Mail as Read
+   */
+  markAsReadAll: catchAsync(async () => {
+    const data = await MailServices.markAsReadAll();
+
+    return {
+      message: 'All mails marked as read successfully',
+      data,
+    };
+  }),
+
+  /**
+   *  Delete Mail
+   */
+  deleteMail: catchAsync(async ({ body }) => {
+    await MailServices.deleteMail(body);
+
+    return {
+      message: 'Mail deleted successfully',
+    };
+  }),
+
+  /**
+   * Delete Read Mails
+   */
+  deleteReadMails: catchAsync(async () => {
+    const data = await MailServices.deleteReadMails();
+
+    return {
+      message: 'Read mails deleted successfully',
+      data,
+    };
+  }),
 };

@@ -14,3 +14,8 @@ export type TAdminMailGetAll = z.infer<
   typeof MailValidations.getAllMail
 >['query'] &
   TList;
+
+/**
+ * Mark Mail Type
+ */
+export type MarkMailArgs = z.infer<typeof MailValidations.markMail>['body'];

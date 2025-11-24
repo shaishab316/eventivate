@@ -16,15 +16,11 @@ export const BlogValidations = {
       title: z
         .string({ error: 'Title is required' })
         .nonempty({ error: 'Title cannot be empty' })
-        .trim()
-        .min(5)
-        .max(255),
+        .trim(),
       description: z
         .string({ error: 'Description is required' })
         .trim()
-        .nonempty({ error: 'Description cannot be empty' })
-        .min(10)
-        .max(500),
+        .nonempty({ error: 'Description cannot be empty' }),
       content: z
         .string({ error: 'Content is required' })
         .trim()

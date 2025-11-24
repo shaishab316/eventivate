@@ -1,7 +1,11 @@
 import { Prisma, prisma } from '../../../utils/db';
 import { TPagination } from '../../../utils/server/serveResponse';
 import { mailSearchableFields } from './Mail.constant';
-import { TAdminMailGetAll, TAdminMailSend } from './Mail.interface';
+import {
+  MarkMailArgs,
+  TAdminMailGetAll,
+  TAdminMailSend,
+} from './Mail.interface';
 
 /**
  * Mail Services
@@ -40,22 +44,9 @@ export const MailServices = {
       where: mailWhere,
       skip: (page - 1) * limit,
       take: limit,
+      //? Unread mails first, then latest mails
       orderBy: [{ unread: 'desc' }, { timestamp: 'desc' }],
     });
-
-    /**
-     * Mark all fetched mails as read
-     */
-    await Promise.all(
-      mails
-        .filter(({ unread }) => unread)
-        .map(({ id }) =>
-          prisma.mail.update({
-            where: { id },
-            data: { unread: false },
-          }),
-        ),
-    );
 
     const total = await prisma.mail.count({ where: mailWhere });
 
@@ -70,5 +61,53 @@ export const MailServices = {
         } satisfies TPagination,
       },
     };
+  },
+
+  /**
+   * Mark Mail As Read/Unread
+   */
+  async markAsRead({ mail_id }: MarkMailArgs) {
+    return prisma.mail.update({
+      where: { id: mail_id },
+      data: { unread: false },
+    });
+  },
+
+  /**
+   * Mark Mail As Unread
+   */
+  async markAsUnread({ mail_id }: MarkMailArgs) {
+    return prisma.mail.update({
+      where: { id: mail_id },
+      data: { unread: true },
+    });
+  },
+
+  /**
+   * Delete Mail
+   */
+  async deleteMail({ mail_id }: MarkMailArgs) {
+    return prisma.mail.delete({
+      where: { id: mail_id },
+    });
+  },
+
+  /**
+   * Delete Read Mails
+   */
+  async deleteReadMails() {
+    return prisma.mail.deleteMany({
+      where: { unread: false },
+    });
+  },
+
+  /**
+   * Mark All Mail As Read
+   */
+  async markAsReadAll() {
+    return prisma.mail.updateMany({
+      where: { unread: true },
+      data: { unread: false },
+    });
   },
 };
