@@ -31,31 +31,25 @@ export const SubscriptionControllers = {
     };
   }),
 
-  getAvailableSubscriptions: catchAsync(async ({ query, user }) => {
+  getAvailableSubscriptions: catchAsync(async ({ query }) => {
     const { meta, subscriptions } =
       await SubscriptionServices.getAvailableSubscriptions(query);
 
     return {
       message: 'Subscriptions retrieved successfully!',
       meta,
-      data: subscriptions.map(subscription => ({
-        ...subscription,
-        isOwned: subscription.name === user?.subscription_name,
-      })),
+      data: subscriptions,
     };
   }),
 
-  getSubscriptionDetails: catchAsync(async ({ params, user }) => {
+  getSubscriptionDetails: catchAsync(async ({ params }) => {
     const subscription = await SubscriptionServices.getSubscriptionDetails(
       params.subscriptionId,
     );
 
     return {
       message: 'Subscription retrieved successfully!',
-      data: {
-        ...subscription,
-        isOwned: subscription?.name === user?.subscription_name,
-      },
+      data: subscription,
     };
   }),
 

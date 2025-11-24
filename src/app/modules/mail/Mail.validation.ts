@@ -31,7 +31,10 @@ export const MailValidations = {
    */
   getAllMail: z.object({
     query: z.object({
-      unread: z.string().transform(Boolean).default(false),
+      unread: z
+        .string()
+        .transform(str => str === 'true')
+        .optional(),
       remarks: z.enum(EUserRole).optional(),
     }),
   }),

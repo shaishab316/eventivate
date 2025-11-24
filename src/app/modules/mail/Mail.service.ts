@@ -24,16 +24,12 @@ export const MailServices = {
    * Admin Get All Mail
    */
   async getAllMail({ page, limit, search, unread, remarks }: TAdminMailGetAll) {
-    const mailWhere: Prisma.MailWhereInput = {};
+    const mailWhere: Prisma.MailWhereInput = { unread };
 
     if (search) {
       mailWhere.OR = mailSearchableFields.map(field => ({
         [field]: { contains: search, mode: 'insensitive' },
       }));
-    }
-
-    if (unread) {
-      mailWhere.unread = true;
     }
 
     if (remarks) {
@@ -61,6 +57,15 @@ export const MailServices = {
         } satisfies TPagination,
       },
     };
+  },
+
+  /**
+   * Get Mail By Id
+   */
+  async getMailById(mail_id: string) {
+    return prisma.mail.findUnique({
+      where: { id: mail_id },
+    });
   },
 
   /**

@@ -84,4 +84,16 @@ export const MailControllers = {
       data,
     };
   }),
+
+  /**
+   * Get Mail By Id
+   */
+  getMailById: catchAsync(async ({ params }) => {
+    const data = await MailServices.getMailById(params.mail_id);
+
+    return {
+      message: 'Mail fetched successfully',
+      data,
+    };
+  }),
 };

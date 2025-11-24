@@ -56,11 +56,11 @@ export default injectRoutes(appRouter, {
   '/payments': [PaymentRoutes.free],
   '/blogs': [BlogRoutes.free],
   '/mails': [MailRoutes.free],
+  '/subscriptions': [SubscriptionRoutes.free],
 
   // all user can access
   '/profile': [auth.default, UserRoutes.all],
   '/tickets': [auth.all, TicketRoutes.all],
-  '/subscriptions': [auth.all, SubscriptionRoutes.all],
   '/transactions': [auth.all, TransactionRoutes.all],
   '/inbox': [auth.all, ChatRoutes.all],
   '/messages': [auth.all, MessageRoutes.all],

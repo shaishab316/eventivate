@@ -28,6 +28,15 @@ const admin = Router();
   );
 
   /**
+   * Admin Get Mail By Id
+   */
+  admin.get(
+    '/:mail_id',
+    purifyRequest(QueryValidations.exists('mail_id', 'mail')),
+    MailControllers.getMailById,
+  );
+
+  /**
    * Admin Mark Mail as Read
    */
   admin.post(
