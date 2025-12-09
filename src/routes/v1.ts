@@ -19,6 +19,7 @@ import catchAsync from '../app/middlewares/catchAsync';
 import { SubscriptionRoutes } from '../app/modules/subscription/Subscription.route';
 import { TransactionRoutes } from '../app/modules/transaction/Transaction.route';
 import { MailRoutes } from '../app/modules/mail/Mail.route';
+import { OfferRoutes } from '../app/modules/offer/Offer.route';
 
 const appRouter = Router();
 
@@ -64,6 +65,7 @@ export default injectRoutes(appRouter, {
   '/transactions': [auth.all, TransactionRoutes.all],
   '/inbox': [auth.all, ChatRoutes.all],
   '/messages': [auth.all, MessageRoutes.all],
+  '/offers': [auth.all, OfferRoutes.all],
 
   // venue can access
   '/venue': [auth.venue, VenueRoutes.venue],

@@ -32,7 +32,7 @@
     "prisma-studio": "npx dotenvx run -- npx prisma studio",
     "prisma-reset": "npx dotenvx run -- npx prisma migrate reset --force",
     "prisma-migrate": "npx dotenvx run -- npx prisma migrate dev",
-    "prisma-generate": "rm -rf prisma && npx prisma generate",
+    "prisma-generate": "npx prisma generate",
     "prisma-seed": "npx dotenvx run -- npx prisma db seed",
     "env-encrypt": "npx dotenvx encrypt -f .env",
     "env-decrypt": "npx dotenvx decrypt -f .env"

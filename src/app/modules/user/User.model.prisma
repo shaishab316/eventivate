@@ -54,6 +54,10 @@ model User {
   tickets                 Ticket[]
   blogs                   Blog[]
   transactions            Transaction[]
+  offers_as_venue         Offer[]       @relation("OfferVenue")
+  offers_as_agent         Offer[]       @relation("OfferAgent")
+  offers_as_artist        Offer[]       @relation("OfferArtist")
+  offers_as_organizer     Offer[]       @relation("OfferOrganizer")
 
   @@map("users")
 }
