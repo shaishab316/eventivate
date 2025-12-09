@@ -10,4 +10,13 @@ export const OfferValidations = {
       document: z.string({ error: 'Document must be provided' }),
     } satisfies TModelZod<Offer, 'document'>),
   }),
+
+  getAllOffers: z.object({
+    query: z.object({
+      is_fully_accepted: z
+        .string()
+        .transform(val => val === 'true')
+        .optional(),
+    } satisfies TModelZod<Offer>),
+  }),
 };

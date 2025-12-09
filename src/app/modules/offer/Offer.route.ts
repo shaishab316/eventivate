@@ -8,6 +8,12 @@ import { QueryValidations } from '../query/Query.validation';
 const all = Router();
 {
   all.get(
+    '/',
+    purifyRequest(QueryValidations.list, OfferValidations.getAllOffers),
+    OfferControllers.getAllOffers,
+  );
+
+  all.get(
     '/:offer_id',
     purifyRequest(QueryValidations.exists('offer_id', 'offer')),
     OfferControllers.getOfferDetails,
@@ -28,5 +34,10 @@ const all = Router();
 }
 
 export const OfferRoutes = {
+  /**
+   * all users can access,
+   *
+   * @url (base_url)/offers
+   */
   all,
 };

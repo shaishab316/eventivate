@@ -1,6 +1,7 @@
 import type z from 'zod';
 import type { OfferValidations } from './Offer.validation';
 import type { User as TUser } from '../../../utils/db';
+import { TList } from '../query/Query.interface';
 
 export type TCreateOfferArgs = z.infer<
   typeof OfferValidations.createOffer
@@ -10,3 +11,7 @@ export type TOfferDetailsArgs = {
   offer_id: string;
   user: Pick<TUser, 'role'>;
 };
+
+export type TGetAllOffersArgs = z.infer<
+  typeof OfferValidations.getAllOffers
+>['query'] & { user: Pick<TUser, 'id' | 'role'> } & TList;

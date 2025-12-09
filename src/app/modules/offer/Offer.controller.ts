@@ -22,4 +22,17 @@ export const OfferControllers = {
       data: offer,
     };
   }),
+
+  getAllOffers: catchAsync(async ({ query, user }) => {
+    const { offers, meta } = await OfferServices.getAllOffers({
+      ...query,
+      user,
+    });
+
+    return {
+      message: 'Offers fetched successfully',
+      meta,
+      data: offers,
+    };
+  }),
 };
