@@ -4,8 +4,8 @@ import type { User as TUser } from '../../../utils/db';
 import { TList } from '../query/Query.interface';
 
 export type TCreateOfferArgs = z.infer<
-  typeof OfferValidations.createOffer
->['body'] & { user: Pick<TUser, 'id' | 'role'> };
+  ReturnType<typeof OfferValidations.createOffer>
+>['body'] & { user: Pick<TUser, 'id' | 'role'>; agent_id?: string };
 
 export type TOfferDetailsArgs = {
   offer_id: string;
@@ -22,4 +22,8 @@ export type TAcceptOfferArgs = z.infer<
 
 export type TAssignOfferArgs = z.infer<
   ReturnType<typeof OfferValidations.assignOffer>
+>['body'];
+
+export type TMarkOfferAsCompleteArgs = z.infer<
+  ReturnType<typeof OfferValidations.markAsComplete>
 >['body'];

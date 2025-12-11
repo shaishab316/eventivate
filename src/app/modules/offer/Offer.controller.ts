@@ -71,4 +71,16 @@ export const OfferControllers = {
       data: offer,
     };
   }),
+
+  /**
+   * Mark an offer as fully accepted.
+   */
+  markAsComplete: catchAsync(async ({ body }) => {
+    const offer = await OfferServices.markAsComplete(body);
+
+    return {
+      message: 'Offer marked as complete successfully',
+      data: offer,
+    };
+  }),
 };

@@ -64,6 +64,15 @@ const agent = Router();
     purifyRequest(OfferValidations.assignOffer),
     OfferControllers.assignOffer,
   );
+
+  /**
+   * agent can mark offer as complete.
+   */
+  agent.post(
+    '/mark-as-complete',
+    purifyRequest(OfferValidations.markAsComplete),
+    OfferControllers.markAsComplete,
+  );
 }
 
 export const OfferRoutes = {

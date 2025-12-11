@@ -5,21 +5,32 @@ import { exists } from '../../../utils/db/exists';
 import type { SchemaOrFn } from '../../middlewares/purifyRequest';
 
 export const OfferValidations = {
-  createOffer: z.object({
-    body: z.object({
-      price: z.number({ error: 'Price must be provided' }),
-      location: z.string({ error: 'Location must be provided' }),
-      document: z.string({ error: 'Document must be provided' }),
-    } satisfies TModelZod<Offer, 'document'>),
-  }),
+  createOffer: ({ user }) =>
+    z.object({
+      body: z.object({
+        price: z.number({ error: 'Price must be provided' }),
+        location: z.string({ error: 'Location must be provided' }),
+        document: z.string({ error: 'Document must be provided' }),
+
+        //? should be have a agent every offer
+        ...(user.role !== EUserRole.AGENT && {
+          agent_id: z.string().refine(
+            exists('user', {
+              role: EUserRole.AGENT,
+            } satisfies Prisma.UserWhereInput),
+            {
+              error: ({ input }) =>
+                `Agent with ID ${input} does not exist or is not an agent`,
+            },
+          ),
+        }),
+      } satisfies TModelZod<Offer, 'document'>),
+    }),
 
   getAllOffers: z.object({
     query: z.object({
-      is_fully_accepted: z
-        .string()
-        .transform(val => val === 'true')
-        .optional(),
-    } satisfies TModelZod<Offer>),
+      tab: z.enum(['pending', 'accepted', 'completed']).default('accepted'),
+    } satisfies TModelZod<Offer, 'tab'>),
   }),
 
   acceptOffer: ({ user }) =>
@@ -72,6 +83,20 @@ export const OfferValidations = {
             } satisfies Prisma.UserWhereInput),
           )
           .optional(),
+      } satisfies TModelZod<Offer, 'offer_id'>),
+    }),
+
+  /**
+   * Mark an offer as complete.
+   */
+  markAsComplete: ({ user }) =>
+    z.object({
+      body: z.object({
+        offer_id: z.string().refine(
+          exists('offer', {
+            agent_id: user.id,
+          } satisfies Prisma.OfferWhereInput),
+        ),
       } satisfies TModelZod<Offer, 'offer_id'>),
     }),
 } satisfies Record<string, SchemaOrFn>;

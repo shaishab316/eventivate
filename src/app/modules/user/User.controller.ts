@@ -74,8 +74,11 @@ export const UserControllers = {
   /**
    * Get all users
    */
-  getAllUser: catchAsync(async ({ query }) => {
-    const { meta, users } = await UserServices.getAllUser(query);
+  getAllUser: catchAsync(async ({ query, user }) => {
+    const { meta, users } = await UserServices.getAllUser({
+      ...query,
+      user_id: user.id,
+    });
 
     return {
       message: 'Users retrieved successfully!',

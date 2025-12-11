@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { EGender, EUserRole, User as TUser } from '../../../utils/db';
-import { enum_encode } from '../../../utils/transform/enum';
 import { TModelZod } from '../../../types/zod';
 
 export const UserValidations = {
@@ -45,8 +44,7 @@ export const UserValidations = {
 
   getAllUser: z.object({
     query: z.object({
-      search: z.string().trim().optional(),
-      role: z.string().transform(enum_encode).pipe(z.enum(EUserRole)),
+      role: z.enum(EUserRole).optional(),
     }),
   }),
 

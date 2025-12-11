@@ -6,6 +6,7 @@ import {
   TAssignOfferArgs,
   TCreateOfferArgs,
   TGetAllOffersArgs,
+  TMarkOfferAsCompleteArgs,
   TOfferDetailsArgs,
 } from './Offer.interface';
 
@@ -48,18 +49,27 @@ export const OfferServices = {
   /**
    * Get all offers related to the user with pagination and optional filtering by acceptance status.
    */
-  async getAllOffers({
-    limit,
-    page,
-    user,
-    is_fully_accepted,
-  }: TGetAllOffersArgs) {
+  async getAllOffers({ limit, page, user, tab }: TGetAllOffersArgs) {
+    const role = user.role.toLowerCase() as Exclude<
+      Lowercase<EUserRole>,
+      'user'
+    >;
+
     const where: Prisma.OfferWhereInput = {
-      [`${user.role.toLowerCase()}_id`]: user.id,
+      [`${role}_id`]: user.id,
     };
 
-    if (is_fully_accepted !== undefined) {
-      where.is_fully_accepted = is_fully_accepted;
+    switch (tab) {
+      case 'pending':
+        where[`is_${role}_accepted`] = false;
+        break;
+      case 'accepted':
+        where[`is_${role}_accepted`] = true;
+        where['is_fully_accepted'] = false;
+        break;
+      case 'completed':
+        where['is_fully_accepted'] = true;
+        break;
     }
 
     const offers = await prisma.offer.findMany({
@@ -113,6 +123,16 @@ export const OfferServices = {
     return prisma.offer.update({
       where: { id: offer_id },
       data: payload,
+    });
+  },
+
+  /**
+   * Mark an offer as fully accepted.
+   */
+  async markAsComplete({ offer_id }: TMarkOfferAsCompleteArgs) {
+    return prisma.offer.update({
+      where: { id: offer_id },
+      data: { is_fully_accepted: true },
     });
   },
 };
