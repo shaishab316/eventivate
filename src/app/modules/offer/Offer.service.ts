@@ -3,6 +3,7 @@ import { TPagination } from '../../../utils/server/serveResponse';
 import { userOmit } from '../user/User.constant';
 import {
   TAcceptOfferArgs,
+  TAssignOfferArgs,
   TCreateOfferArgs,
   TGetAllOffersArgs,
   TOfferDetailsArgs,
@@ -102,6 +103,16 @@ export const OfferServices = {
         [`${role}_document_url`]: document,
         [`${role}_document_uploaded_at`]: new Date(),
       },
+    });
+  },
+
+  /**
+   * Assign an offer to an artist, venue, or organization.
+   */
+  async assignOffer({ offer_id, ...payload }: TAssignOfferArgs) {
+    return prisma.offer.update({
+      where: { id: offer_id },
+      data: payload,
     });
   },
 };

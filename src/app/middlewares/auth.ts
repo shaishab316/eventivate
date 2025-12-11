@@ -86,6 +86,21 @@ auth.default = auth();
 // Base auth without role restrictions
 auth.all = auth({ validators: [commonValidator] });
 
+//? Auth without "user" role restrictions
+auth.allOmitUser = auth({
+  validators: [
+    commonValidator,
+    ({ role }) => {
+      if (role === EUserRole.USER) {
+        throw new ServerError(
+          StatusCodes.FORBIDDEN,
+          'You do not have permissions to access this resource',
+        );
+      }
+    },
+  ],
+});
+
 // Admin auth
 auth.admin = auth({
   validators: [

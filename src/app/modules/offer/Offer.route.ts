@@ -54,6 +54,18 @@ const all = Router();
   );
 }
 
+const agent = Router();
+{
+  /**
+   * agent can assign offer to artist, venue, or a organization.
+   */
+  agent.post(
+    '/assign',
+    purifyRequest(OfferValidations.assignOffer),
+    OfferControllers.assignOffer,
+  );
+}
+
 export const OfferRoutes = {
   /**
    * all users can access,
@@ -61,4 +73,10 @@ export const OfferRoutes = {
    * @url (base_url)/offers
    */
   all,
+  /**
+   * only agents can access,
+   *
+   * @url (base_url)/agent/offers
+   */
+  agent,
 };

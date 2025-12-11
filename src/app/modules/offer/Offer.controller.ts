@@ -59,4 +59,16 @@ export const OfferControllers = {
       data: offer,
     };
   }),
+
+  /**
+   * Assign an offer to an artist, venue, or organization.
+   */
+  assignOffer: catchAsync(async ({ body }) => {
+    const offer = await OfferServices.assignOffer(body);
+
+    return {
+      message: 'Offer assigned successfully',
+      data: offer,
+    };
+  }),
 };

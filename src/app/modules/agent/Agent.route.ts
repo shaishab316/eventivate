@@ -3,6 +3,8 @@ import { AgentControllers } from './Agent.controller';
 import purifyRequest from '../../middlewares/purifyRequest';
 import { QueryValidations } from '../query/Query.validation';
 import { AgentValidations } from './Agent.validation';
+import { injectRoutes } from '../../../utils/router/injectRouter';
+import { OfferRoutes } from '../offer/Offer.route';
 
 const free = Router();
 {
@@ -16,7 +18,10 @@ const free = Router();
   );
 }
 
-const agent = Router();
+const agent = injectRoutes(Router(), {
+  '/offers': [OfferRoutes.agent],
+});
+
 {
   /**
    * Get agent overview

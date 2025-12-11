@@ -19,3 +19,7 @@ export type TGetAllOffersArgs = z.infer<
 export type TAcceptOfferArgs = z.infer<
   ReturnType<typeof OfferValidations.acceptOffer>
 >['body'] & { user: Pick<TUser, 'id' | 'role'> };
+
+export type TAssignOfferArgs = z.infer<
+  ReturnType<typeof OfferValidations.assignOffer>
+>['body'];

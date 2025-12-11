@@ -65,7 +65,7 @@ export default injectRoutes(appRouter, {
   '/transactions': [auth.all, TransactionRoutes.all],
   '/inbox': [auth.all, ChatRoutes.all],
   '/messages': [auth.all, MessageRoutes.all],
-  '/offers': [auth.all, OfferRoutes.all],
+  '/offers': [auth.allOmitUser, OfferRoutes.all],
 
   // venue can access
   '/venue': [auth.venue, VenueRoutes.venue],
