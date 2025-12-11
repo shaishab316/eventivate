@@ -5,31 +5,52 @@ import { OfferControllers } from './Offer.controller';
 import capture from '../../middlewares/capture';
 import { QueryValidations } from '../query/Query.validation';
 
+export const captureDocument = capture({
+  document: {
+    fileType: 'any',
+    size: 50 * 1024 * 1024, // 50 MB
+    maxCount: 1,
+  },
+});
+
 const all = Router();
 {
+  /**
+   * Get all offers related to the user with pagination and optional filtering.
+   */
   all.get(
     '/',
     purifyRequest(QueryValidations.list, OfferValidations.getAllOffers),
     OfferControllers.getAllOffers,
   );
 
+  /**
+   * Get offer details by ID.
+   */
   all.get(
     '/:offer_id',
     purifyRequest(QueryValidations.exists('offer_id', 'offer')),
     OfferControllers.getOfferDetails,
   );
 
+  /**
+   * Create a new offer.
+   */
   all.post(
     '/',
-    capture({
-      document: {
-        fileType: 'any',
-        size: Infinity,
-        maxCount: 1,
-      },
-    }),
+    captureDocument,
     purifyRequest(OfferValidations.createOffer),
     OfferControllers.createOffer,
+  );
+
+  /**
+   * Accept an offer.
+   */
+  all.post(
+    '/accept',
+    captureDocument,
+    purifyRequest(OfferValidations.acceptOffer),
+    OfferControllers.acceptOffer,
   );
 }
 

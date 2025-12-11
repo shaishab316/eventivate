@@ -6,7 +6,7 @@ import config from '../../config';
 
 const keys = ['body', 'query', 'params', 'cookies'] as const;
 
-type SchemaOrFn =
+export type SchemaOrFn =
   | ZodObject
   | ((req: Request) => ZodObject | Promise<ZodObject>);
 
