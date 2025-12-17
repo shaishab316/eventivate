@@ -11,6 +11,7 @@ export const OfferValidations = {
         price: z.number({ error: 'Price must be provided' }),
         location: z.string({ error: 'Location must be provided' }),
         document: z.string({ error: 'Document must be provided' }),
+        date: z.iso.datetime({ error: 'Date must be provided' }),
 
         //? should be have a agent every offer
         ...(user.role !== EUserRole.AGENT && {

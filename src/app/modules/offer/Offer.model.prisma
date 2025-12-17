@@ -3,8 +3,9 @@ model Offer {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  price    Float  @default(0.0)
-  location String @default("N/A")
+  price    Float     @default(0.0)
+  location String    @default("N/A")
+  date     DateTime?
 
   venue_id     String?
   agent_id     String?
