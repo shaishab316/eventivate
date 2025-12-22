@@ -93,7 +93,7 @@ const all = Router();
   /**
    * Connect stripe account
    */
-  all.get('/connect-stripe', UserControllers.connectStripeAccount);
+  all.post('/connect-stripe', UserControllers.connectStripeAccount);
 
   /**
    * Get all users

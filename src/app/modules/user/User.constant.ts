@@ -33,7 +33,7 @@ export const userUserOmit = {
   genre: true,
   availability: true,
   price: true,
-  location: true,
+  // location: true,
   agent_artists: true,
   agent_pending_artists: true,
   artist_agents: true,

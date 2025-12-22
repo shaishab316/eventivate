@@ -22,6 +22,7 @@ export const UserValidations = {
         .nullable()
         .transform(val => val ?? undefined),
       gender: z.enum(EGender).optional(),
+      location: z.string().optional(),
     } satisfies TModelZod<TUser>),
   }),
 

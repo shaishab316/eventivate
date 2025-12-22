@@ -43,7 +43,7 @@ const free = Router();
     SubscriptionControllers.getSubscriptionDetails,
   );
 
-  free.get(
+  free.post(
     '/:subscriptionId/subscribe',
     auth.all,
     purifyRequest(QueryValidations.exists('subscriptionId', 'subscription')),

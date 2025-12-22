@@ -62,10 +62,11 @@ export const OfferServices = {
     switch (tab) {
       case 'pending':
         where[`is_${role}_accepted`] = false;
+        where.is_fully_accepted = false;
         break;
       case 'accepted':
         where[`is_${role}_accepted`] = true;
-        where['is_fully_accepted'] = false;
+        where.is_fully_accepted = false;
         break;
       case 'completed':
         where['is_fully_accepted'] = true;
