@@ -28,10 +28,22 @@ export const ArtistServices = {
    *
    * @param {TList} { limit, page, search }
    */
-  async getArtistList({ limit, page, search }: TList) {
+  async getArtistList({
+    limit,
+    page,
+    search,
+    notIn,
+  }: TList & { notIn?: string[] }) {
     const where: Prisma.UserWhereInput = {
       role: EUserRole.ARTIST,
     };
+
+    /**
+     * Exclude artists in notIn list
+     */
+    if (notIn && notIn.length > 0) {
+      where.id = { notIn };
+    }
 
     //? Search artist using searchable fields
     if (search) {

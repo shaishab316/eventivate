@@ -32,10 +32,22 @@ export const AgentServices = {
   /**
    * Retrieve all agent list
    */
-  async getAgentList({ limit, page, search }: TList) {
+  async getAgentList({
+    limit,
+    page,
+    search,
+    notIn,
+  }: TList & { notIn?: string[] }) {
     const where: Prisma.UserWhereInput = {
       role: EUserRole.AGENT,
     };
+
+    /**
+     * Exclude agents in notIn list
+     */
+    if (notIn && notIn.length > 0) {
+      where.id = { notIn };
+    }
 
     //? Search agent using searchable fields
     if (search) {
