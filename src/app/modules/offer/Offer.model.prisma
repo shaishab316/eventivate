@@ -1,0 +1,38 @@
+model Offer {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  price    Float     @default(0.0)
+  location String    @default("N/A")
+  date     DateTime?
+
+  venue_id     String?
+  agent_id     String?
+  artist_id    String?
+  organizer_id String?
+
+  is_venue_accepted     Boolean @default(false)
+  is_agent_accepted     Boolean @default(false)
+  is_artist_accepted    Boolean @default(false)
+  is_organizer_accepted Boolean @default(false)
+
+  venue_document_url     String?
+  agent_document_url     String?
+  artist_document_url    String?
+  organizer_document_url String?
+
+  venue_document_uploaded_at     DateTime?
+  agent_document_uploaded_at     DateTime?
+  artist_document_uploaded_at    DateTime?
+  organizer_document_uploaded_at DateTime?
+
+  is_fully_accepted Boolean @default(false)
+
+  venue     User? @relation("OfferVenue", fields: [venue_id], references: [id], onDelete: Cascade)
+  agent     User? @relation("OfferAgent", fields: [agent_id], references: [id], onDelete: Cascade)
+  artist    User? @relation("OfferArtist", fields: [artist_id], references: [id], onDelete: Cascade)
+  organizer User? @relation("OfferOrganizer", fields: [organizer_id], references: [id], onDelete: Cascade)
+
+  @@map("offers")
+}

@@ -31,7 +31,7 @@ model User {
 
   experience               String?
   genre                    String?
-  availability             DateTime[]   @default([])
+  availability             DateTime[]   @default([]) // Todo: so reference not embedded
   price                    String?
   venue_type               String?
   capacity                 Int?
@@ -54,6 +54,10 @@ model User {
   tickets                 Ticket[]
   blogs                   Blog[]
   transactions            Transaction[]
+  offers_as_venue         Offer[]       @relation("OfferVenue")
+  offers_as_agent         Offer[]       @relation("OfferAgent")
+  offers_as_artist        Offer[]       @relation("OfferArtist")
+  offers_as_organizer     Offer[]       @relation("OfferOrganizer")
 
   @@map("users")
 }

@@ -3,6 +3,9 @@ import { AgentControllers } from './Agent.controller';
 import purifyRequest from '../../middlewares/purifyRequest';
 import { QueryValidations } from '../query/Query.validation';
 import { AgentValidations } from './Agent.validation';
+import { injectRoutes } from '../../../utils/router/injectRouter';
+import { OfferRoutes } from '../offer/Offer.route';
+import auth from '../../middlewares/auth';
 
 const free = Router();
 {
@@ -14,9 +17,22 @@ const free = Router();
     purifyRequest(QueryValidations.list),
     AgentControllers.getAgentList,
   );
+
+  /**
+   * Get new agents list
+   */
+  free.get(
+    '/new-agents',
+    auth.artist,
+    purifyRequest(QueryValidations.list),
+    AgentControllers.getNewAgents,
+  );
 }
 
-const agent = Router();
+const agent = injectRoutes(Router(), {
+  '/offers': [OfferRoutes.agent],
+});
+
 {
   /**
    * Get agent overview

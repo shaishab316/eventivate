@@ -86,4 +86,16 @@ export const EventControllers = {
       message: 'Event completed successfully!',
     };
   }),
+
+  /**
+   * Get event by id
+   */
+  getEventById: catchAsync(async ({ params }) => {
+    const event = await EventServices.getEventById(params.event_id);
+
+    return {
+      message: 'Event retrieved successfully!',
+      data: event,
+    };
+  }),
 };

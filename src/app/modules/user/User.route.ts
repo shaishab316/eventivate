@@ -5,7 +5,7 @@ import { QueryValidations } from '../query/Query.validation';
 import { UserValidations } from './User.validation';
 import capture from '../../middlewares/capture';
 import { AuthControllers } from '../auth/Auth.controller';
-import { changePasswordRateLimiter } from '../auth/Auth.utils';
+import { authRateLimiter } from '../auth/Auth.utils';
 
 const avatarCapture = capture({
   avatar: {
@@ -85,7 +85,7 @@ const all = Router();
    */
   all.post(
     '/change-password',
-    changePasswordRateLimiter,
+    authRateLimiter,
     purifyRequest(UserValidations.changePassword),
     AuthControllers.changePassword,
   );
@@ -93,7 +93,7 @@ const all = Router();
   /**
    * Connect stripe account
    */
-  all.get('/connect-stripe', UserControllers.connectStripeAccount);
+  all.post('/connect-stripe', UserControllers.connectStripeAccount);
 
   /**
    * Get all users

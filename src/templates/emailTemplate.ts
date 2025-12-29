@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import config from '../config';
 import ms from 'ms';
-import Handlebars from 'handlebars';
+import Handlebars, { TemplateDelegate } from 'handlebars';
 import mjml2html from 'mjml';
 
 type TTemplate = {
@@ -11,39 +11,45 @@ type TTemplate = {
   template: 'reset_password' | 'account_verify';
 };
 
-/**
- * use for cache
- */
-const templates = new Map<string, string>();
+// Cache only compiled Handlebars MJML templates per template name (NOT per otp)
+const compiledTemplates = new Map<string, TemplateDelegate>();
+
+async function getCompiledTemplate(name: string) {
+  const existing = compiledTemplates.get(name);
+  if (existing) return existing;
+
+  const filePath = path.join(
+    process.cwd(),
+    `public/templates/emails/${name}.mjml`,
+  );
+  const rawMjml = await fs.promises.readFile(filePath, 'utf-8');
+  const compiled = Handlebars.compile(rawMjml);
+  compiledTemplates.set(name, compiled);
+  return compiled;
+}
 
 /**
- * This function returns the email template.
- *
- * @param {TTemplate} { userName, otp, template }
+ * Returns rendered email HTML by compiling MJML and inserting dynamic data.
+ * Uses per-template compilation cache to avoid unbounded memory growth from user-specific keys.
  */
 export const emailTemplate = async ({ otp, template, userName }: TTemplate) => {
-  if (!templates.has(otp)) {
-    const rawMjml = await fs.promises.readFile(
-      path.join(process.cwd(), `/public/templates/emails/${template}.mjml`),
-      'utf-8',
-    );
+  const compiled = await getCompiledTemplate(template);
 
-    const data = {
-      companyName: config.server.name,
-      userName,
-      otp,
-      expiryTime: ms(ms(config.otp.exp), { long: true }),
-      verificationUrl: `http://localhost:3000/verify?email`,
-      supportUrl: config.email.support,
-      privacyUrl: `http://localhost:3000/privacy`,
-      unsubscribeUrl: `http://localhost:3000/unsubscribe?email`,
-      currentYear: new Date().getFullYear(),
-    };
+  const data = {
+    companyName: config.server.name,
+    userName,
+    otp,
+    expiryTime: ms(ms(config.otp.exp), { long: true }),
+    verificationUrl: `http://localhost:3000/verify?email`,
+    supportUrl: config.email.support,
+    privacyUrl: `http://localhost:3000/privacy`,
+    unsubscribeUrl: `http://localhost:3000/unsubscribe?email`,
+    currentYear: new Date().getFullYear(),
+  };
 
-    const { html } = mjml2html(Handlebars.compile(rawMjml)(data));
+  // Todo: use valid urls in the above links
 
-    templates.set(otp, html);
-  }
-
-  return templates.get(otp) ?? 'no content';
+  const mjmlContent = compiled(data);
+  const { html } = mjml2html(mjmlContent);
+  return html || 'no content';
 };

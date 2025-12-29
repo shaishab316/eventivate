@@ -26,9 +26,9 @@ const admin = Router();
   );
 }
 
-const all = Router();
+const free = Router();
 {
-  all.get(
+  free.get(
     '/',
     purifyRequest(
       QueryValidations.list,
@@ -37,13 +37,13 @@ const all = Router();
     SubscriptionControllers.getAvailableSubscriptions,
   );
 
-  all.get(
+  free.get(
     '/:subscriptionId',
     purifyRequest(QueryValidations.exists('subscriptionId', 'subscription')),
     SubscriptionControllers.getSubscriptionDetails,
   );
 
-  all.get(
+  free.post(
     '/:subscriptionId/subscribe',
     auth.all,
     purifyRequest(QueryValidations.exists('subscriptionId', 'subscription')),
@@ -64,5 +64,5 @@ export const SubscriptionRoutes = {
    *
    * @url : (base_url)/subscriptions/
    */
-  all,
+  free,
 };

@@ -64,57 +64,13 @@ export const verifyPassword = async (password: string, hash: string) => {
   return bcrypt.compare(password, hash);
 };
 
-export const otpVerifyRateLimiter = rateLimit({
-  windowMs: ms('15m'),
-  max: 2,
-  message: formatError(
-    new ServerError(
-      StatusCodes.TOO_MANY_REQUESTS,
-      'Too many attempts. Try again in 15 minutes.',
-    ),
-  ),
-});
-
-export const loginRateLimiter = rateLimit({
-  windowMs: ms('10m'),
+export const authRateLimiter = rateLimit({
+  windowMs: ms('5m'),
   max: 100,
   message: formatError(
     new ServerError(
       StatusCodes.TOO_MANY_REQUESTS,
-      'Too many login attempts. Try again in 10 minutes.',
-    ),
-  ),
-});
-
-export const forgotPasswordRateLimiter = rateLimit({
-  windowMs: ms('15m'),
-  max: 50,
-  message: formatError(
-    new ServerError(
-      StatusCodes.TOO_MANY_REQUESTS,
-      'Too many forgot password attempts. Try again in 15 minutes.',
-    ),
-  ),
-});
-
-export const registerRateLimiter = rateLimit({
-  windowMs: ms('30m'),
-  max: 100,
-  message: formatError(
-    new ServerError(
-      StatusCodes.TOO_MANY_REQUESTS,
-      'Too many registration attempts. Try again in 30 minutes.',
-    ),
-  ),
-});
-
-export const changePasswordRateLimiter = rateLimit({
-  windowMs: ms('15m'),
-  max: 50,
-  message: formatError(
-    new ServerError(
-      StatusCodes.TOO_MANY_REQUESTS,
-      'Too many change password attempts. Try again in 15 minutes.',
+      'Too many change password attempts. Try again in 5 minutes.',
     ),
   ),
 });

@@ -235,4 +235,21 @@ export const EventServices = {
       events,
     };
   },
+
+  /**
+   * Get event by id
+   */
+  async getEventById(event_id: string) {
+    return prisma.event.findUnique({
+      where: { id: event_id },
+      include: {
+        organizer: {
+          select: {
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+  },
 };

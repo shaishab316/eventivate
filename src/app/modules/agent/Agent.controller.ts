@@ -23,6 +23,28 @@ export const AgentControllers = {
   }),
 
   /**
+   * Retrieve new agents list
+   */
+  getNewAgents: catchAsync(async ({ query, user: artist }) => {
+    const { meta, agents } = await AgentServices.getAgentList({
+      ...query,
+      notIn: artist.artist_agents,
+    });
+
+    return {
+      message: 'Agents retrieved successfully!',
+      meta,
+      data: agents.map(agent => ({
+        ...agent,
+        /**
+         * Check if the artist has already requested this agent
+         */
+        is_requested: agent.agent_pending_artists.includes(artist.id),
+      })),
+    };
+  }),
+
+  /**
    * Invite an artist for an agent
    */
   inviteArtist: catchAsync(async ({ body, user: agent }) => {

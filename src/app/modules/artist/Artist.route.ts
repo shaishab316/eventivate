@@ -3,6 +3,7 @@ import purifyRequest from '../../middlewares/purifyRequest';
 import { QueryValidations } from '../query/Query.validation';
 import { ArtistControllers } from './Artist.controller';
 import { ArtistValidations } from './Artist.validation';
+import auth from '../../middlewares/auth';
 
 const free = Router();
 {
@@ -13,6 +14,16 @@ const free = Router();
     '/',
     purifyRequest(QueryValidations.list),
     ArtistControllers.getArtistList,
+  );
+
+  /**
+   * Get new artists list
+   */
+  free.get(
+    '/new-artists',
+    auth.agent,
+    purifyRequest(QueryValidations.list),
+    ArtistControllers.getNewArtists,
   );
 }
 

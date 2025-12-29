@@ -20,8 +20,17 @@ export const EventValidations = {
       description: z.string({ error: 'Description is required' }).nonempty({
         message: 'Description is required',
       }),
-      start_date: z.iso.datetime({ error: 'Start date is required' }),
-      end_date: z.iso.datetime().optional(),
+      start_date: z.iso
+        .datetime({ error: 'Start date is required' })
+        .refine(date => new Date(date) > new Date(), {
+          message: 'Start date must be in the future',
+        }),
+      end_date: z.iso
+        .datetime()
+        .refine(date => new Date(date) > new Date(), {
+          message: 'End date must be in the future',
+        })
+        .optional(),
       location: z.string({ error: 'Location is required' }).nonempty({
         message: 'Location is required',
       }),
@@ -47,8 +56,18 @@ export const EventValidations = {
       title: z.string().optional(),
       images: z.array(z.string()).optional().nullable(),
       description: z.string().optional(),
-      start_date: z.iso.datetime().optional(),
-      end_date: z.iso.datetime().optional(),
+      start_date: z.iso
+        .datetime()
+        .refine(date => date && new Date(date) > new Date(), {
+          message: 'Start date must be in the future',
+        })
+        .optional(),
+      end_date: z.iso
+        .datetime()
+        .refine(date => date && new Date(date) > new Date(), {
+          message: 'End date must be in the future',
+        })
+        .optional(),
       location: z.string().optional(),
       ticket_price: z.coerce.number().optional(),
       capacity: z.coerce.number().optional(),

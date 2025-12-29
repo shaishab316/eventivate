@@ -12,8 +12,8 @@ import ora from 'ora';
 export function ticketExpirationJob() {
   console.log(chalk.green('✔ Ticket expiration job started'));
 
-  /** every 5 minutes */
-  const expirationJob = cron.schedule('*/5 * * * *', async () => {
+  /** 6 hours */
+  const expirationJob = cron.schedule('0 */6 * * *', async () => {
     const spinner = ora(chalk.yellow('Deleting expired tickets...')).start();
 
     try {

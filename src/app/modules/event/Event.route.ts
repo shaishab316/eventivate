@@ -79,6 +79,15 @@ const free = Router();
     purifyRequest(QueryValidations.list),
     EventControllers.getUserUpcomingEvents,
   );
+
+  /**
+   * Get event by id
+   */
+  free.get(
+    '/:event_id',
+    purifyRequest(QueryValidations.exists('event_id', 'event')),
+    EventControllers.getEventById,
+  );
 }
 
 export const EventRoutes = {

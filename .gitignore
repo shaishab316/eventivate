@@ -9,5 +9,3 @@
 /uploads
 /.vscode/settings.json
 api*.json
-
-**/migrations

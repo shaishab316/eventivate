@@ -130,8 +130,14 @@ export const UserServices = {
   /**
    * Get all users with pagination and search
    */
-  async getAllUser({ page, limit, search, role }: TList & { role: EUserRole }) {
-    const where: Prisma.UserWhereInput = { role };
+  async getAllUser({
+    page,
+    limit,
+    search,
+    role,
+    user_id,
+  }: TList & { role: EUserRole; user_id: string }) {
+    const where: Prisma.UserWhereInput = { role, id: { not: user_id } };
 
     if (search)
       where.OR = searchFields.map(field => ({
