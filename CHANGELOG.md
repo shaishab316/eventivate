@@ -1,3 +1,31 @@
+# [1.13.0](https://github.com/shaishab316/getavails-server/compare/v1.12.0...v1.13.0) (2025-12-29)
+
+
+### Features
+
+* Add endpoints to retrieve new agents and artists, including exclusion logic ([f77b813](https://github.com/shaishab316/getavails-server/commit/f77b8132b6029a4f0af9a34f2506f5935ef98b8d))
+* Add functionality to retrieve an event by ID ([d8d45bb](https://github.com/shaishab316/getavails-server/commit/d8d45bb1dceae517d35f8d15e6308c029fb2619d))
+* Add mark as complete functionality for offers and update validations ([a3b00b8](https://github.com/shaishab316/getavails-server/commit/a3b00b842a26df9ca0d7c1e97682bf131b047eae))
+* Add venue endpoints and related entities to agent offers ([d8d5623](https://github.com/shaishab316/getavails-server/commit/d8d5623e78eeaea9fea8a81666a2c09a484e6b7d))
+* Allow organizers to mark events as completed ([d7bf349](https://github.com/shaishab316/getavails-server/commit/d7bf349382cb0705a76cd2a02be3c771f5cdb773))
+* Enhance offer management with acceptance functionality and validation ([34cfeba](https://github.com/shaishab316/getavails-server/commit/34cfeba971f79f49a0a405f04cf6b7311d915f85))
+* Implement admin mail management and refactor blog validation ([dae9fe6](https://github.com/shaishab316/getavails-server/commit/dae9fe63aaa6cb37f38eb73c5d5914b3db540209))
+* Implement daily log rotation and update .gitignore ([b1f0b31](https://github.com/shaishab316/getavails-server/commit/b1f0b317060e8c609170905046c09513f83503fa))
+* Implement getAllOffers functionality with pagination and validation ([88c585e](https://github.com/shaishab316/getavails-server/commit/88c585e40afa5393af96572dc842dbc25e81b76b))
+* Implement mail module and integrate with admin routes ([3d45529](https://github.com/shaishab316/getavails-server/commit/3d45529fb30bd70ccaa453f6abb29ebeeb0d46e3))
+* Implement mail retrieval by ID and refactor subscriptions ([1713ef2](https://github.com/shaishab316/getavails-server/commit/1713ef2ff6c8741efbb532804161a421965e597f))
+* Implement offer assignment functionality and update auth middleware ([65ff882](https://github.com/shaishab316/getavails-server/commit/65ff8821cab11a46947e14867f283c247d5b3e1b))
+* Implement offer management with CRUD operations and validation ([9b7568b](https://github.com/shaishab316/getavails-server/commit/9b7568b0d3019679efcc477ac62d594338886d23))
+* Implement organizer get sold tickets functionality ([eef346b](https://github.com/shaishab316/getavails-server/commit/eef346b7a35f73fdd9d5b69fb502f87b04a4675e))
+* Implement per-template compilation cache for Handlebars MJML ([fe434a1](https://github.com/shaishab316/getavails-server/commit/fe434a11ca51885197a0d2b200140dc921bd5180))
+* Include location in ticket fetch and improve user deletion ([36d2834](https://github.com/shaishab316/getavails-server/commit/36d2834d8bf9f9687adb963ed46d47ef8b8b6148))
+* Rename `all` router to `free` and protect upcoming events route ([ee5a3c9](https://github.com/shaishab316/getavails-server/commit/ee5a3c927724c7042fd7b49dc5365a6b0bdbf173))
+* Replace individual rate limiters with a unified auth rate limiter across authentication routes ([a69401e](https://github.com/shaishab316/getavails-server/commit/a69401e0f2d23828d31b9d53b4cc5ab42d695ff9))
+* Update completeEvent endpoint to use request body for event ID ([71e0260](https://github.com/shaishab316/getavails-server/commit/71e02609c06701b047b9bf5fd6f60614fbe0ec23))
+* Update offer acceptance logic and add location validation for users ([27ff70b](https://github.com/shaishab316/getavails-server/commit/27ff70bf9fb68175e868efd139e8ac6c5816839d))
+* Update offer model and validations to include date field ([a340292](https://github.com/shaishab316/getavails-server/commit/a340292343daba8c7d16f2681ea7fc33ed2c94cc))
+* Upgrade Prisma to v7, enable ESM, and update schema ([8d3ee64](https://github.com/shaishab316/getavails-server/commit/8d3ee644c5b90946c42c4268e2c887f3babe7328))
+
 # [1.13.0](https://github.com/shaishab316/getavails-server/compare/v1.12.0...v1.13.0) (2025-11-20)
 
 
