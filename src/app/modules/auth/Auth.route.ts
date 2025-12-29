@@ -5,46 +5,41 @@ import { UserControllers } from '../user/User.controller';
 import { UserValidations } from '../user/User.validation';
 import purifyRequest from '../../middlewares/purifyRequest';
 import auth from '../../middlewares/auth';
-import {
-  otpVerifyRateLimiter,
-  forgotPasswordRateLimiter,
-  loginRateLimiter,
-  registerRateLimiter,
-} from './Auth.utils';
+import { authRateLimiter } from './Auth.utils';
 
 const free = Router();
 {
   free.post(
     '/register',
-    registerRateLimiter,
+    authRateLimiter,
     purifyRequest(UserValidations.userRegister),
     UserControllers.register,
   );
 
   free.post(
     '/agent-register',
-    registerRateLimiter,
+    authRateLimiter,
     purifyRequest(UserValidations.agentRegister),
     UserControllers.register,
   );
 
   free.post(
     '/venue-register',
-    registerRateLimiter,
+    authRateLimiter,
     purifyRequest(UserValidations.venueRegister),
     UserControllers.register,
   );
 
   free.post(
     '/artist-register',
-    registerRateLimiter,
+    authRateLimiter,
     purifyRequest(UserValidations.artistRegister),
     UserControllers.register,
   );
 
   free.post(
     '/organizer-register',
-    registerRateLimiter,
+    authRateLimiter,
     purifyRequest(UserValidations.organizerRegister),
     UserControllers.register,
   );
@@ -52,14 +47,14 @@ const free = Router();
 
 free.post(
   '/account-verify',
-  otpVerifyRateLimiter,
+  authRateLimiter,
   purifyRequest(AuthValidations.accountVerify),
   AuthControllers.accountVerify,
 );
 
 free.post(
   '/login',
-  loginRateLimiter,
+  authRateLimiter,
   purifyRequest(AuthValidations.login),
   AuthControllers.login,
 );
@@ -72,14 +67,14 @@ free.post(
 
 free.post(
   '/forgot-password',
-  forgotPasswordRateLimiter,
+  authRateLimiter,
   purifyRequest(AuthValidations.otpSend),
   AuthControllers.forgotPassword,
 );
 
 free.post(
   '/forgot-password/otp-verify',
-  otpVerifyRateLimiter,
+  authRateLimiter,
   purifyRequest(AuthValidations.accountVerify),
   AuthControllers.forgotPasswordOtpVerify,
 );

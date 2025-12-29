@@ -107,7 +107,7 @@ export const OfferServices = {
   async acceptOffer({ document, offer_id, user }: TAcceptOfferArgs) {
     const role = user.role.toLowerCase();
 
-    return prisma.offer.update({
+    const offer = await prisma.offer.update({
       where: { id: offer_id },
       data: {
         [`is_${role}_accepted`]: true,
@@ -115,6 +115,18 @@ export const OfferServices = {
         [`${role}_document_uploaded_at`]: new Date(),
       },
     });
+
+    if (
+      offer.is_agent_accepted &&
+      offer.is_artist_accepted &&
+      offer.is_venue_accepted &&
+      offer.is_organizer_accepted
+    ) {
+      await prisma.offer.update({
+        where: { id: offer_id },
+        data: { is_fully_accepted: true },
+      });
+    }
   },
 
   /**
