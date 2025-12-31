@@ -4,6 +4,8 @@ import { verifyPassword } from './Auth.utils';
 import ServerError from '../../../errors/ServerError';
 import { StatusCodes } from 'http-status-codes';
 import { TToken } from '../../../types/auth.types';
+import { prisma } from '../../../utils/db';
+import { userSelfOmit } from '../user/User.constant';
 
 export const AuthControllers = {
   login: catchAsync(async ({ body }, res) => {
@@ -128,7 +130,13 @@ export const AuthControllers = {
 
     return {
       message: 'AccessToken refreshed successfully!',
-      data: { access_token },
+      data: {
+        access_token,
+        user: await prisma.user.findUnique({
+          where: { id: user.id },
+          omit: userSelfOmit[user.role],
+        }),
+      },
     };
   }),
 };
