@@ -82,8 +82,6 @@ export const AuthServices = {
    * this function sets tokens in cookies
    */
   setTokens(res: Response, tokens: { [key in TToken]?: string }) {
-    return; // TODO: cookies disabled for testing
-
     Object.entries(tokens).forEach(([key, value]) =>
       res.cookie(key, value, {
         httpOnly: true,
