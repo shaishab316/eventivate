@@ -363,7 +363,7 @@ export const SubscriptionServices = {
       user_id: user.id,
       user_name: user.name,
       user_email: user.email,
-      user_avatar: user.avatar,
+      user_avatar: user.avatar ?? config.server.default_avatar,
       subscription_name: subscription.name,
       subscription_features: subscription.features.join(', '),
       subscription_interval: subscription.subscription_interval,

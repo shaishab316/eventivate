@@ -2,6 +2,7 @@
 import type {
   TAccountVerify,
   TAccountVerifyOtpSend,
+  TGoogleLogin,
   TResetPassword,
   TUserLogin,
 } from './Auth.interface';
@@ -18,6 +19,9 @@ import { Response } from 'express';
 import { generateOTP, validateOTP } from '../../../utils/crypto/otp';
 import { userSelfOmit } from '../user/User.constant';
 import { TToken } from '../../../types/auth.types';
+import { UserServices } from '../user/User.service';
+import { downloadFile } from '../../middlewares/capture';
+import { googleUser } from './Auth.lib';
 
 /**
  * Authentication services
@@ -264,5 +268,41 @@ export const AuthServices = {
       where: { id: user.id },
       omit: userSelfOmit[user.role],
     });
+  },
+
+  async googleLogin({ access_token, role }: TGoogleLogin) {
+    try {
+      const payload = await googleUser(access_token);
+
+      const email = payload.email ?? `${payload.id}@google-login.com`;
+
+      let user = await prisma.user.findFirst({
+        where: { email },
+        omit: userSelfOmit[role],
+      });
+
+      if (!user) {
+        user = await UserServices.register({
+          avatar: await downloadFile({
+            url: payload.picture,
+            fileType: 'images',
+          }),
+          role,
+          email,
+          password: Math.random().toString().slice(0, 10), //? random password length 10
+          name: 'Google User',
+          is_verified: true,
+          is_active: true,
+        });
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new ServerError(StatusCodes.UNAUTHORIZED, error.message);
+      }
+
+      throw error;
+    }
   },
 };

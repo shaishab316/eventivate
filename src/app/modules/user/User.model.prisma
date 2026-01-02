@@ -14,7 +14,7 @@ model User {
   //! end
 
   //! profile
-  avatar   String  @default("/images/placeholder.png")
+  avatar   String? @default("/images/placeholder.png")
   name     String  @default("Getavails User")
   gender   EGender @default(OTHER)
   location String?

@@ -46,7 +46,12 @@ export const UserServices = {
   /**
    * Register user and send otp
    */
-  async register({ email, role, password, ...payload }: Omit<TUser, 'id'>) {
+  async register({
+    email,
+    role,
+    password,
+    ...payload
+  }: Omit<Prisma.UserCreateArgs['data'], 'id'>) {
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { role: true, is_verified: true }, //? skip body
@@ -67,14 +72,14 @@ export const UserServices = {
         ...payload,
       },
       create: {
-        id: await UserServices.getNextUserId({ role }),
+        id: await UserServices.getNextUserId({ role: role ?? EUserRole.USER }),
         email,
         role,
         password: await hashPassword(password),
         ...payload,
       },
       omit: {
-        ...userSelfOmit[role],
+        ...userSelfOmit[role!],
         otp_id: false,
         stripe_account_id: false,
       },

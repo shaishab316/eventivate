@@ -51,13 +51,20 @@ free.post(
   purifyRequest(AuthValidations.accountVerify),
   AuthControllers.accountVerify,
 );
+{
+  free.post(
+    '/login',
+    authRateLimiter,
+    purifyRequest(AuthValidations.login),
+    AuthControllers.login,
+  );
 
-free.post(
-  '/login',
-  authRateLimiter,
-  purifyRequest(AuthValidations.login),
-  AuthControllers.login,
-);
+  free.post(
+    '/google-login',
+    purifyRequest(AuthValidations.googleLogin),
+    AuthControllers.googleLogin,
+  );
+}
 
 free.post(
   '/account-verify/otp-send',

@@ -33,6 +33,23 @@ export const AuthControllers = {
     };
   }),
 
+  googleLogin: catchAsync(async ({ body }, res) => {
+    const user = await AuthServices.googleLogin(body);
+
+    const { access_token, refresh_token } = AuthServices.retrieveToken(
+      user.id!,
+      'access_token',
+      'refresh_token',
+    );
+
+    AuthServices.setTokens(res, { refresh_token });
+
+    return {
+      message: 'Login successfully!',
+      data: { access_token, refresh_token, user },
+    };
+  }),
+
   accountVerify: catchAsync(async ({ body }, res) => {
     const user = await AuthServices.userOtpVerify(body);
 
