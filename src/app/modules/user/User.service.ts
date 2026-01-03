@@ -22,28 +22,6 @@ import stripeAccountConnectQueue from '../../../utils/mq/stripeAccountConnectQue
  */
 export const UserServices = {
   /**
-   * Get next user id
-   */
-  async getNextUserId(
-    where:
-      | { role: EUserRole; is_admin?: never }
-      | { role?: never; is_admin: true },
-  ): Promise<string> {
-    const prefix = where.role ? where.role.toLowerCase().slice(0, 2) : 'su';
-
-    const user = await prisma.user.findFirst({
-      where,
-      orderBy: { created_at: 'desc' },
-      select: { id: true },
-    });
-
-    if (!user) return `${prefix}-1`;
-
-    const currSL = parseInt(user.id.split('-')[1], 10);
-    return `${prefix}-${currSL + 1}`;
-  },
-
-  /**
    * Register user and send otp
    */
   async register({
@@ -52,83 +30,113 @@ export const UserServices = {
     password,
     ...payload
   }: Omit<Prisma.UserCreateArgs['data'], 'id'>) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-      select: { role: true, is_verified: true }, //? skip body
+    return prisma.$transaction(async tx => {
+      const existingUser = await tx.user.findUnique({
+        where: { email },
+        select: { role: true, is_verified: true }, //? skip body
+      });
+
+      //? ensure user doesn't exist
+      if (!payload.is_admin && existingUser?.is_verified)
+        throw new ServerError(
+          StatusCodes.CONFLICT,
+          `${existingUser.role} already exists with this ${email} email.`,
+        );
+
+      let user = await tx.user.upsert({
+        where: { email },
+        update: {
+          role,
+          password: await hashPassword(password),
+          ...payload,
+        },
+        create: {
+          id: crypto.randomUUID(), //? temporary id, will be replaced
+          email,
+          role,
+          password: await hashPassword(password),
+          ...payload,
+        },
+        omit: {
+          ...userSelfOmit[role!],
+          sl: false,
+          otp_id: false,
+          stripe_account_id: false,
+        },
+      });
+
+      const prefix = role?.toLowerCase().slice(0, 2) || 'su';
+
+      user = await tx.user.update({
+        where: { sl: user.sl },
+        data: { id: `${prefix}-${user.sl}` },
+        omit: {
+          ...userSelfOmit[role!],
+          sl: false,
+          otp_id: false,
+          stripe_account_id: false,
+        },
+      });
+
+      if (!user.stripe_account_id) {
+        await stripeAccountConnectQueue.add({
+          user_id: user.id,
+        });
+      }
+
+      //? send verification otp if not verified
+      if (!user.is_verified) {
+        try {
+          const otp = generateOTP({
+            tokenType: 'access_token',
+            otpId: user.id + user.otp_id,
+          });
+
+          await emailQueue.add({
+            to: user.email,
+            subject: `Your ${config.server.name} Account Verification OTP is ⚡ ${otp} ⚡.`,
+            html: await emailTemplate({
+              userName: user.name,
+              otp,
+              template: 'account_verify',
+            }),
+          });
+        } catch (error) {
+          if (error instanceof Error) errorLogger.error(error.message);
+        }
+      }
+
+      return {
+        ...user,
+        sl: undefined,
+        otp_id: undefined,
+        stripe_account_id: undefined,
+      };
     });
-
-    //? ensure user doesn't exist
-    if (existingUser?.is_verified)
-      throw new ServerError(
-        StatusCodes.CONFLICT,
-        `${existingUser.role} already exists with this ${email} email.`,
-      );
-
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {
-        role,
-        password: await hashPassword(password),
-        ...payload,
-      },
-      create: {
-        id: await UserServices.getNextUserId({ role: role ?? EUserRole.USER }),
-        email,
-        role,
-        password: await hashPassword(password),
-        ...payload,
-      },
-      omit: {
-        ...userSelfOmit[role!],
-        otp_id: false,
-        stripe_account_id: false,
-      },
-    });
-
-    if (!user.stripe_account_id) {
-      await stripeAccountConnectQueue.add({
-        user_id: user.id,
-      });
-    }
-
-    try {
-      const otp = generateOTP({
-        tokenType: 'access_token',
-        otpId: user.id + user.otp_id,
-      });
-
-      await emailQueue.add({
-        to: user.email,
-        subject: `Your ${config.server.name} Account Verification OTP is ⚡ ${otp} ⚡.`,
-        html: await emailTemplate({
-          userName: user.name,
-          otp,
-          template: 'account_verify',
-        }),
-      });
-    } catch (error) {
-      if (error instanceof Error) errorLogger.error(error.message);
-    }
-
-    return {
-      ...user,
-      otp_id: undefined,
-      stripe_account_id: undefined,
-    };
   },
 
+  /**
+   * Update user details
+   */
   async updateUser({ user, body }: { user: Partial<TUser>; body: TUserEdit }) {
-    const data: Prisma.UserUpdateInput = body;
+    return prisma.$transaction(async tx => {
+      const data: Prisma.UserUpdateInput = body;
 
-    if (body.avatar && user.avatar) await deleteFilesQueue.add([user.avatar]);
+      if (body.avatar && user.avatar) await deleteFilesQueue.add([user.avatar]);
 
-    if (body.role && body.role !== user.role)
-      data.id = await this.getNextUserId({ role: body.role });
+      if (body.role && body.role !== user.role) {
+        const prefix = user.is_admin
+          ? 'su'
+          : body.role.toLowerCase().slice(0, 2);
 
-    return prisma.user.update({
-      where: { id: user.id },
-      omit: userSelfOmit[body.role ?? user.role ?? EUserRole.USER],
-      data,
+        data.id = `${prefix}-${user.sl}`;
+      }
+
+      return tx.user.update({
+        where: { id: user.id },
+        omit: userSelfOmit[body.role ?? user.role ?? EUserRole.USER],
+        data,
+      });
     });
   },
 

@@ -272,38 +272,48 @@ export const AuthServices = {
 
   async googleLogin({ access_token, role }: TGoogleLogin) {
     try {
-      const payload = await googleUser(access_token);
+      return prisma.$transaction(async tx => {
+        const payload = await googleUser(access_token);
 
-      const email = payload.email ?? `${payload.id}@google-login.com`;
+        const email = payload.email ?? `${payload.id}@google-login.com`;
 
-      let user = await prisma.user.findFirst({
-        where: { email },
-        omit: userSelfOmit[role],
+        let user: Partial<TUser> | null = await tx.user.findFirst({
+          where: { email },
+          omit: {
+            ...userSelfOmit[role],
+            sl: false,
+          },
+        });
+
+        if (!user) {
+          user = await UserServices.register({
+            avatar: await downloadFile({
+              url: payload.picture,
+              fileType: 'images',
+            }),
+            role,
+            email,
+            password: Math.random().toString().slice(0, 10), //? random password length 10
+            name: 'Google User',
+            is_verified: true,
+            is_active: true,
+          });
+        } else if (role !== user.role) {
+          const prefix = user.is_admin ? 'su' : role.toLowerCase().slice(0, 2);
+
+          //? if user want to change role while login
+          user = await tx.user.update({
+            where: { id: user.id },
+            data: { role, id: `${prefix}-${user.sl}` },
+            omit: userSelfOmit[role],
+          });
+        }
+
+        return {
+          ...user,
+          sl: undefined,
+        };
       });
-
-      if (!user) {
-        user = await UserServices.register({
-          avatar: await downloadFile({
-            url: payload.picture,
-            fileType: 'images',
-          }),
-          role,
-          email,
-          password: Math.random().toString().slice(0, 10), //? random password length 10
-          name: 'Google User',
-          is_verified: true,
-          is_active: true,
-        });
-      } else if (role !== user.role) {
-        //? if user want to change role while login
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: { role, id: await UserServices.getNextUserId({ role }) },
-          omit: userSelfOmit[role],
-        });
-      }
-
-      return user;
     } catch (error) {
       if (error instanceof Error) {
         throw new ServerError(StatusCodes.UNAUTHORIZED, error.message);

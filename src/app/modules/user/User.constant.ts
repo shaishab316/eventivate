@@ -9,6 +9,7 @@ export const userSearchableFields = [
 ] satisfies (keyof TUser)[];
 
 const selfOmit = {
+  sl: true,
   password: true,
   otp_id: true,
   stripe_account_id: true,
