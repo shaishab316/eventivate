@@ -294,6 +294,13 @@ export const AuthServices = {
           is_verified: true,
           is_active: true,
         });
+      } else if (role !== user.role) {
+        //? if user want to change role while login
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { role, id: await UserServices.getNextUserId({ role }) },
+          omit: userSelfOmit[role],
+        });
       }
 
       return user;

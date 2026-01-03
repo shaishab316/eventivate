@@ -10,6 +10,10 @@ export const UserValidations = {
       password: z
         .string({ error: 'Password is missing' })
         .min(6, 'Password must be at least 6 characters long'),
+      name: z
+        .string({ error: 'Name is required' })
+        .nonempty('Name is required')
+        .max(100, 'Name must be at most 100 characters long'),
     } satisfies TModelZod<TUser>),
   }),
 
