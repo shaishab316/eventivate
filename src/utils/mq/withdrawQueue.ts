@@ -9,7 +9,10 @@ import { stripe } from '../../app/modules/payment/Payment.utils';
 /**
  * Withdraw queue
  */
-const withdrawQueue = new Queue<TWithdrawArgs>('withdraw', config.url.redis);
+const withdrawQueue = new Queue<TWithdrawArgs>(
+  `${config.server.name}::withdraw`,
+  config.url.redis,
+);
 
 withdrawQueue.process(async ({ data }) => {
   const spinner = ora({

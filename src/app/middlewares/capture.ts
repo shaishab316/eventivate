@@ -3,9 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import multer, { FileFilterCallback, StorageEngine } from 'multer';
 import ServerError from '../../errors/ServerError';
 import catchAsync from './catchAsync';
-import { errorLogger, logger } from '../../utils/logger';
+import { logger } from '../../utils/logger';
 import chalk from 'chalk';
-import { json } from '../../utils/transform/json';
 import path from 'path';
 import fs from 'fs/promises';
 import { createWriteStream, existsSync } from 'fs';
@@ -59,14 +58,14 @@ const ensureUploadDirs = async (): Promise<void> => {
       ),
     );
   } catch (error) {
-    errorLogger.error('Failed to create upload directories:', error);
+    logger.error('Failed to create upload directories:' + error);
     throw error;
   }
 };
 
 // Initialize directories on module load
 ensureUploadDirs().catch(err =>
-  errorLogger.error('Upload directory initialization failed:', err),
+  logger.error('Upload directory initialization failed:' + err),
 );
 
 /**
@@ -100,7 +99,7 @@ const capture = (fields: UploadFields) =>
 
           req.tempFiles.push(...uploadedFiles);
         } else {
-          req.body[field] = fields[field].default ?? null;
+          req.body[field] = fields[field].default;
         }
       }
 
@@ -112,16 +111,16 @@ const capture = (fields: UploadFields) =>
 
       // Set defaults on error
       for (const field of Object.keys(fields)) {
-        req.body[field] = fields[field].default ?? null;
+        req.body[field] = fields[field].default;
       }
     } finally {
       // Parse JSON data if exists
       if (req.body?.data) {
         try {
-          Object.assign(req.body, json(req.body.data));
+          Object.assign(req.body, JSON.parse(req.body.data));
           delete req.body.data;
         } catch (err) {
-          errorLogger.error('Failed to parse JSON data:', err);
+          logger.error('Failed to parse JSON data:' + err);
         }
       }
 
@@ -170,7 +169,7 @@ export const deleteFile = async (filename: string): Promise<boolean> => {
     spinner.fail(chalk.red(`File '${sanitizedFilename}' not found`));
     return false;
   } catch (error: any) {
-    errorLogger.error(`Failed to delete file '${sanitizedFilename}':`, error);
+    logger.error(`Failed to delete file '${sanitizedFilename}':` + error);
     return false;
   }
 };
