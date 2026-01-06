@@ -272,39 +272,37 @@ export const AuthServices = {
 
   async googleLogin({ access_token, role }: TGoogleLogin) {
     try {
-      return prisma.$transaction(async tx => {
-        const payload = await googleUser(access_token);
+      const payload = await googleUser(access_token);
 
-        const email = payload.email ?? `${payload.id}@google-login.com`;
+      const email = payload.email ?? `${payload.id}@google-login.com`;
 
-        let user: Partial<TUser> | null = await tx.user.findFirst({
-          where: { email },
-          omit: {
-            ...userSelfOmit[role],
-            sl: false,
-          },
-        });
-
-        if (!user) {
-          user = await UserServices.register({
-            avatar: await downloadFile({
-              url: payload.picture,
-              fileType: 'images',
-            }),
-            role,
-            email,
-            password: Math.random().toString().slice(0, 10), //? random password length 10
-            name: 'Google User',
-            is_verified: true,
-            is_active: true,
-          });
-        }
-
-        return {
-          ...user,
-          sl: undefined,
-        };
+      let user: Partial<TUser> | null = await prisma.user.findFirst({
+        where: { email },
+        omit: {
+          ...userSelfOmit[role],
+          sl: false,
+        },
       });
+
+      if (!user) {
+        user = await UserServices.register({
+          avatar: await downloadFile({
+            url: payload.picture,
+            fileType: 'images',
+          }),
+          role,
+          email,
+          password: Math.random().toString().slice(0, 10), //? random password length 10
+          name: 'Google User',
+          is_verified: true,
+          is_active: true,
+        });
+      }
+
+      return {
+        ...user,
+        sl: undefined,
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new ServerError(StatusCodes.UNAUTHORIZED, error.message);
