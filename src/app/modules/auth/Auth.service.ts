@@ -298,15 +298,6 @@ export const AuthServices = {
             is_verified: true,
             is_active: true,
           });
-        } else if (role !== user.role) {
-          const prefix = user.is_admin ? 'su' : role.toLowerCase().slice(0, 2);
-
-          //? if user want to change role while login
-          user = await tx.user.update({
-            where: { id: user.id },
-            data: { role, id: `${prefix}-${user.sl}` },
-            omit: userSelfOmit[role],
-          });
         }
 
         return {
