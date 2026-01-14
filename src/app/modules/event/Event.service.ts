@@ -191,7 +191,7 @@ export const EventServices = {
   async getAllEvents({ limit, page, search }: TList) {
     const where: Prisma.EventWhereInput = {
       start_date: { gte: new Date() },
-      status: EEventStatus.PUBLISHED,
+      status: { in: [EEventStatus.PUBLISHED, EEventStatus.UPCOMING] },
       can_buy_tickets: true,
       available_capacity: { gt: 0 },
     };
