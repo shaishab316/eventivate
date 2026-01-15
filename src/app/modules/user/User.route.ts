@@ -7,14 +7,6 @@ import capture from '../../middlewares/capture';
 import { AuthControllers } from '../auth/Auth.controller';
 import { authRateLimiter } from '../auth/Auth.utils';
 
-const avatarCapture = capture({
-  avatar: {
-    size: 5 * 1024 * 1024,
-    maxCount: 1,
-    fileType: 'images',
-  },
-});
-
 const admin = Router();
 {
   /**
@@ -31,10 +23,9 @@ const admin = Router();
    */
   admin.patch(
     '/:userId/edit',
-    avatarCapture,
     purifyRequest(
       QueryValidations.exists('userId', 'user'),
-      UserValidations.editProfile,
+      UserValidations.superEditProfile,
     ),
     UserControllers.superEditProfile,
   );
@@ -61,7 +52,13 @@ const all = Router();
    */
   all.patch(
     '/edit',
-    avatarCapture,
+    capture({
+      avatar: {
+        size: 5 * 1024 * 1024,
+        maxCount: 1,
+        fileType: 'images',
+      },
+    }),
     purifyRequest(UserValidations.editProfile),
     UserControllers.editProfile,
   );

@@ -21,12 +21,18 @@ export const UserValidations = {
     body: z.object({
       role: z.enum(EUserRole).optional(),
       name: z.string().optional(),
-      avatar: z
-        .string()
-        .nullable()
-        .transform(val => val ?? undefined),
+      avatar: z.string().optional(),
       gender: z.enum(EGender).optional(),
       location: z.string().optional(),
+    } satisfies TModelZod<TUser>),
+  }),
+
+  superEditProfile: z.object({
+    body: z.object({
+      role: z.enum(EUserRole).optional(),
+      is_active: z.boolean().optional(),
+      is_verified: z.boolean().optional(),
+      is_admin: z.boolean().optional(),
     } satisfies TModelZod<TUser>),
   }),
 

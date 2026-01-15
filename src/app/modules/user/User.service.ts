@@ -3,10 +3,10 @@ import {
   userSearchableFields as searchFields,
   userSelfOmit,
 } from './User.constant';
-import { EUserRole, Prisma, prisma, User as TUser } from '../../../utils/db';
+import { EUserRole, type Prisma, prisma } from '../../../utils/db';
 import { TPagination } from '../../../utils/server/serveResponse';
 import deleteFilesQueue from '../../../utils/mq/deleteFilesQueue';
-import type { TUpdateAvailability, TUserEdit } from './User.interface';
+import type { TUpdateAvailability, TUserEditArgs } from './User.interface';
 import ServerError from '../../../errors/ServerError';
 import { StatusCodes } from 'http-status-codes';
 import { hashPassword } from '../auth/Auth.utils';
@@ -118,11 +118,12 @@ export const UserServices = {
   /**
    * Update user details
    */
-  async updateUser({ user, body }: { user: Partial<TUser>; body: TUserEdit }) {
+  async updateUser({ user, body }: TUserEditArgs) {
     return prisma.$transaction(async tx => {
       const data: Prisma.UserUpdateInput = body;
 
-      if (body.avatar && user.avatar) await deleteFilesQueue.add([user.avatar]);
+      if (data?.avatar && user.avatar)
+        await deleteFilesQueue.add([user.avatar]);
 
       if (body.role && body.role !== user.role) {
         const prefix = user.is_admin

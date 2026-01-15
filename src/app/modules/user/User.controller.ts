@@ -10,6 +10,7 @@ import ServerError from '../../../errors/ServerError';
 import stripeAccountConnectQueue from '../../../utils/mq/stripeAccountConnectQueue';
 import config from '../../../config';
 import { userSelfOmit } from './User.constant';
+import type { TUserSuperEdit } from './User.interface';
 
 /**
  * User controllers
@@ -55,7 +56,7 @@ export const UserControllers = {
   /**
    * Super edit profile
    */
-  superEditProfile: catchAsync(async ({ params, body }) => {
+  superEditProfile: catchAsync<TUserSuperEdit>(async ({ params, body }) => {
     const user = (await prisma.user.findUnique({
       where: { id: params.userId },
     })) as TUser;
