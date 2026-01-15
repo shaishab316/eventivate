@@ -29,6 +29,7 @@ export const AdminServices = {
         is_active: true,
         is_verified: true,
         is_admin: true,
+        is_super_admin: true,
       });
 
       spinner.succeed(chalk.green('✅ Admin user seeded successfully'));

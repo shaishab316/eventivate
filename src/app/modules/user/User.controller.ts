@@ -56,21 +56,30 @@ export const UserControllers = {
   /**
    * Super edit profile
    */
-  superEditProfile: catchAsync<TUserSuperEdit>(async ({ params, body }) => {
-    const user = (await prisma.user.findUnique({
-      where: { id: params.userId },
-    })) as TUser;
+  superEditProfile: catchAsync<TUserSuperEdit>(
+    async ({ params, body, user: admin }) => {
+      if (!admin.is_super_admin && body.is_admin !== undefined) {
+        throw new ServerError(
+          StatusCodes.FORBIDDEN,
+          'Only super admins can modify admin',
+        );
+      }
 
-    const data = await UserServices.updateUser({
-      user,
-      body,
-    });
+      const user = (await prisma.user.findUnique({
+        where: { id: params.userId },
+      })) as TUser;
 
-    return {
-      message: `${capitalize(user?.role) ?? 'User'} updated successfully!`,
-      data,
-    };
-  }),
+      const data = await UserServices.updateUser({
+        user,
+        body,
+      });
+
+      return {
+        message: `${capitalize(user?.role) ?? 'User'} updated successfully!`,
+        data,
+      };
+    },
+  ),
 
   /**
    * Get all users

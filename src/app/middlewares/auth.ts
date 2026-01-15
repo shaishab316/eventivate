@@ -47,8 +47,13 @@ const auth = ({
 /**
  * Common validator function
  */
-function commonValidator({ is_admin, is_verified, is_active }: TUser) {
-  if (is_admin) return;
+function commonValidator({
+  is_admin,
+  is_super_admin,
+  is_verified,
+  is_active,
+}: TUser) {
+  if (is_super_admin || is_admin) return;
 
   if (!is_verified) {
     throw new ServerError(
@@ -105,7 +110,9 @@ auth.allOmitUser = auth({
 auth.admin = auth({
   validators: [
     commonValidator,
-    ({ is_admin }) => {
+    ({ is_admin, is_super_admin }) => {
+      if (is_super_admin) return;
+
       if (!is_admin) {
         throw new ServerError(StatusCodes.FORBIDDEN, 'You are not an admin');
       }
