@@ -1,61 +1,109 @@
 import { z } from 'zod';
-import { EGender, EUserRole, User as TUser } from '../../../utils/db';
-import { TModelZod } from '../../../types/zod';
+import { EGender, EUserRole, type User as TUser } from '../../../utils/db';
+import type { TModelZod } from '../../../types/zod';
+
+//? shared validation utils
+const _ = {
+  name: z
+    .string('Name is required')
+    .trim()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be at most 100 characters long'),
+
+  email: z.email('Email is invalid'),
+
+  password: z
+    .string('Password is missing')
+    .trim()
+    .min(6, 'Password must be at least 6 characters long')
+    .max(30, 'Password must be at most 30 characters long'),
+
+  avatar: z.string('Avatar is required').trim(),
+
+  gender: z.enum(EGender),
+
+  location: z
+    .string('Location is required')
+    .trim()
+    .min(1, 'Location is required'),
+
+  role: z.enum(EUserRole),
+
+  is_active: z.boolean('is_active is required'),
+
+  is_verified: z.boolean('is_verified is required'),
+
+  is_admin: z.boolean('is_admin is required'),
+
+  experience: z
+    .string('Experience is required')
+    .trim()
+    .min(1, 'Experience is required'),
+
+  price: z.coerce
+    .string('Price is required')
+    .trim()
+    .min(1, 'Price is required'),
+
+  capacity: z.coerce
+    .number('Venue capacity is required')
+    .min(1, 'Venue capacity is required'),
+
+  venue_type: z
+    .string('Venue type is required')
+    .trim()
+    .min(1, 'Venue type is required'),
+
+  genre: z
+    .string('Looking for genre is required')
+    .trim()
+    .min(1, 'Looking for genre is required'),
+
+  availability: z.array(
+    z.iso.datetime(),
+    'Availability should be an array of dates',
+  ),
+};
 
 export const UserValidations = {
   userRegister: z.object({
     body: z.object({
-      role: z.literal(EUserRole.USER).default(EUserRole.USER),
-      email: z.email({ error: 'Email is invalid' }),
-      password: z
-        .string({ error: 'Password is missing' })
-        .min(6, 'Password must be at least 6 characters long'),
-      name: z
-        .string({ error: 'Name is required' })
-        .nonempty('Name is required')
-        .max(100, 'Name must be at most 100 characters long'),
+      role: _.role.default(EUserRole.USER),
+      name: _.name,
+      email: _.email,
+      password: _.password,
     } satisfies TModelZod<TUser>),
   }),
 
   editProfile: z.object({
     body: z.object({
-      role: z.enum(EUserRole).optional(),
-      name: z.string().optional(),
-      avatar: z.string().optional(),
-      gender: z.enum(EGender).optional(),
-      location: z.string().optional(),
+      role: _.role.optional(),
+      name: _.name.optional(),
+      avatar: _.avatar.optional(),
+      gender: _.gender.optional(),
+      location: _.location.optional(),
     } satisfies TModelZod<TUser>),
   }),
 
   superEditProfile: z.object({
     body: z.object({
-      role: z.enum(EUserRole).optional(),
-      is_active: z.boolean().optional(),
-      is_verified: z.boolean().optional(),
-      is_admin: z.boolean().optional(),
+      role: _.role.optional(),
+      is_active: _.is_active.optional(),
+      is_verified: _.is_verified.optional(),
+      is_admin: _.is_admin.optional(),
     } satisfies TModelZod<TUser>),
   }),
 
   changePassword: z.object({
     body: z.object({
-      oldPassword: z
-        .string({
-          error: 'Old Password is missing',
-        })
-        .min(1, 'Old Password is required')
-        .min(6, 'Old Password must be at least 6 characters long'),
-      newPassword: z
-        .string({
-          error: 'New Password is missing',
-        })
-        .min(1, 'New Password is required')
-        .min(6, 'New Password must be at least 6 characters long'),
+      oldPassword: _.password,
+      newPassword: _.password,
     }),
   }),
 
   getAllUser: z.object({
     query: z.object({
-      role: z.enum(EUserRole).optional(),
+      role: _.role.optional(),
     }),
   }),
 
@@ -63,46 +111,24 @@ export const UserValidations = {
   agentRegister: z.object({
     body: z.object({
       role: z.literal(EUserRole.AGENT).default(EUserRole.AGENT),
-      name: z
-        .string({ error: 'Name is required' })
-        .nonempty('Name is required'),
-      email: z.email({ error: 'Email is invalid' }),
-      password: z
-        .string({ error: 'Password is missing' })
-        .min(6, 'Password must be at least 6 characters long')
-        .max(30, 'Password must be at most 30 characters long'),
-      experience: z
-        .string({ error: 'Experience is required' })
-        .nonempty('Experience is required'),
-      location: z
-        .string({ error: 'Location is required' })
-        .nonempty('Location is required'),
-      price: z.coerce
-        .string({ error: 'Price is required' })
-        .nonempty('Price is required'),
+      name: _.name,
+      email: _.email,
+      password: _.password,
+      experience: _.experience,
+      location: _.location,
+      price: _.price,
     } satisfies TModelZod<TUser>),
   }),
 
   venueRegister: z.object({
     body: z.object({
       role: z.literal(EUserRole.VENUE).default(EUserRole.VENUE),
-      name: z
-        .string({ error: 'Name is required' })
-        .nonempty('Name is required'),
-      email: z.email({ error: 'Email is invalid' }),
-      password: z
-        .string({ error: 'Password is missing' })
-        .min(6, 'Password must be at least 6 characters long')
-        .max(30, 'Password must be at most 30 characters long'),
-      capacity: z.coerce
-        .number({ error: 'Venue capacity is required' })
-        .min(1, 'Venue capacity is required'),
-      venue_type: z
-        .string({ error: 'Venue type is required' })
-        .nonempty('Venue type is required'),
-      location: z
-        .string({ error: 'Location is required' })
-        .nonempty('Location is required'),
+      name: _.name,
+      email: _.email,
+      password: _.password,
+      capacity: _.capacity,
+      venue_type: _.venue_type,
+      location: _.location,
     } satisfies TModelZod<TUser>),
   }),
 
@@ -110,23 +136,12 @@ export const UserValidations = {
   artistRegister: z.object({
     body: z.object({
       role: z.literal(EUserRole.ARTIST).default(EUserRole.ARTIST),
-      name: z
-        .string({ error: 'Name is required' })
-        .nonempty('Name is required'),
-      email: z.email({ error: 'Email is invalid' }),
-      password: z
-        .string({ error: 'Password is missing' })
-        .min(6, 'Password must be at least 6 characters long')
-        .max(30, 'Password must be at most 30 characters long'),
-      genre: z
-        .string({ error: 'Genre is required' })
-        .nonempty('Genre is required'),
-      price: z.coerce
-        .string({ error: 'Price is required' })
-        .nonempty('Price is required'),
-      location: z
-        .string({ error: 'Location is required' })
-        .nonempty('Location is required'),
+      name: _.name,
+      email: _.email,
+      password: _.password,
+      genre: _.genre,
+      price: _.price,
+      location: _.location,
     } satisfies TModelZod<TUser>),
   }),
 
@@ -134,28 +149,26 @@ export const UserValidations = {
   organizerRegister: z.object({
     body: z.object({
       role: z.literal(EUserRole.ORGANIZER).default(EUserRole.ORGANIZER),
-      name: z
-        .string({ error: 'Name is required' })
-        .nonempty('Name is required'),
-      email: z.email({ error: 'Email is invalid' }),
-      password: z
-        .string({ error: 'Password is missing' })
-        .min(6, 'Password must be at least 6 characters long')
-        .max(30, 'Password must be at most 30 characters long'),
-      genre: z
-        .string({ error: 'Looking for genre is required' })
-        .nonempty('Looking for genre is required'),
-      location: z
-        .string({ error: 'Location is required' })
-        .nonempty('Location is required'),
+      name: _.name,
+      email: _.email,
+      password: _.password,
+      genre: _.genre,
+      location: _.location,
     } satisfies TModelZod<TUser>),
   }),
 
   updateAvailability: z.object({
     body: z.object({
-      availability: z.array(z.iso.datetime(), {
-        error: 'Availability is required',
-      }),
+      availability: _.availability,
     }),
+  }),
+
+  tourManagerRegister: z.object({
+    body: z.object({
+      role: z.literal(EUserRole.TOUR_MANAGER).default(EUserRole.TOUR_MANAGER),
+      name: _.name,
+      email: _.email,
+      password: _.password,
+    } satisfies TModelZod<TUser>),
   }),
 };

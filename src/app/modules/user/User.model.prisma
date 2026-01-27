@@ -60,6 +60,7 @@ model User {
   offers_as_agent         Offer[]       @relation("OfferAgent")
   offers_as_artist        Offer[]       @relation("OfferArtist")
   offers_as_organizer     Offer[]       @relation("OfferOrganizer")
+  offers_as_tour_manager  Offer[]       @relation("OfferTourManager")
 
   @@map("users")
 }
@@ -70,6 +71,7 @@ enum EUserRole {
   VENUE
   ARTIST
   AGENT
+  TOUR_MANAGER
 }
 
 enum EGender {

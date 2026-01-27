@@ -43,6 +43,13 @@ const free = Router();
     purifyRequest(UserValidations.organizerRegister),
     UserControllers.register,
   );
+
+  free.post(
+    '/tour-manager-register',
+    authRateLimiter,
+    purifyRequest(UserValidations.tourManagerRegister),
+    UserControllers.register,
+  );
 }
 
 free.post(
@@ -51,6 +58,7 @@ free.post(
   purifyRequest(AuthValidations.accountVerify),
   AuthControllers.accountVerify,
 );
+
 {
   free.post(
     '/login',

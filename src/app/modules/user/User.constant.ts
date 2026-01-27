@@ -86,12 +86,29 @@ export const userOrganizerOmit = {
   capacity: true,
 } satisfies Prisma.UserOmit;
 
+export const userTourManagerOmit = {
+  ...selfOmit,
+  experience: true,
+  availability: true,
+  price: true,
+  artist_agents: true,
+  artist_pending_agents: true,
+  agent_artists: true,
+  agent_pending_artists: true,
+  venue_type: true,
+  capacity: true,
+  genre: true,
+  gender: true,
+  location: true,
+};
+
 export const userSelfOmit = {
   [EUserRole.USER]: userUserOmit,
   [EUserRole.ARTIST]: userArtistOmit,
   [EUserRole.ORGANIZER]: userOrganizerOmit,
   [EUserRole.VENUE]: userVenueOmit,
   [EUserRole.AGENT]: userAgentOmit,
+  [EUserRole.TOUR_MANAGER]: userTourManagerOmit,
 };
 
 export const userOmit = {
@@ -100,4 +117,5 @@ export const userOmit = {
   [EUserRole.ORGANIZER]: { ...userDefaultOmit, ...userOrganizerOmit },
   [EUserRole.VENUE]: { ...userDefaultOmit, ...userVenueOmit },
   [EUserRole.AGENT]: { ...userDefaultOmit, ...userAgentOmit },
+  [EUserRole.TOUR_MANAGER]: { ...userDefaultOmit, ...userTourManagerOmit },
 };
