@@ -213,6 +213,35 @@ const config = {
       ),
     },
   },
+
+  googleOAuth: {
+    client_id: env(
+      'google oauth client id',
+      `google-client-id.apps.googleusercontent.com`,
+      {
+        regex: '^[\\w-]+\\.apps\\.googleusercontent\\.com$',
+        up: 'Google OAuth - start',
+      },
+    ),
+    client_secret: env('google oauth client secret', genSecret(18), {
+      regex: '^.{10,}$',
+    }),
+    token_encryption_key: env(
+      'google oauth token encryption key',
+      genSecret(32),
+      {
+        regex: '^.{10,}$',
+      },
+    ),
+    redirect_uri: env(
+      'google oauth redirect uri',
+      `http://localhost:${port}/api/v1/auth/google/callback`,
+      {
+        regex: '^https?:\\/\\/.*$|^$',
+        down: 'Google OAuth - end',
+      },
+    ),
+  },
 };
 
 export default config as Readonly<typeof config>;

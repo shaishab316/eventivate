@@ -61,6 +61,7 @@ model User {
   offers_as_artist        Offer[]       @relation("OfferArtist")
   offers_as_organizer     Offer[]       @relation("OfferOrganizer")
   offers_as_tour_manager  Offer[]       @relation("OfferTourManager")
+  calendar                Calendar?
 
   @@map("users")
 }

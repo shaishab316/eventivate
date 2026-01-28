@@ -20,6 +20,7 @@ import { SubscriptionRoutes } from '../app/modules/subscription/Subscription.rou
 import { TransactionRoutes } from '../app/modules/transaction/Transaction.route';
 import { MailRoutes } from '../app/modules/mail/Mail.route';
 import { OfferRoutes } from '../app/modules/offer/Offer.route';
+import { CalendarRoutes } from '../app/modules/calendar/Calendar.route';
 
 const appRouter = Router();
 
@@ -66,6 +67,7 @@ export default injectRoutes(appRouter, {
   '/inbox': [auth.all, ChatRoutes.all],
   '/messages': [auth.all, MessageRoutes.all],
   '/offers': [auth.allOmitUser, OfferRoutes.all],
+  '/calendars': [auth.all, CalendarRoutes],
 
   // venue can access
   '/venue': [auth.venue, VenueRoutes.venue],

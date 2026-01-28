@@ -1,0 +1,30 @@
+model Calendar {
+  id                 String    @id @default(uuid())
+  google_calender_id String?
+  is_connected       Boolean   @default(false)
+  connected_at       DateTime?
+  disconnected_at    DateTime  @default(now())
+
+  user_id String @unique
+
+  user            User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  calender_tokens CalenderToken?
+
+  @@map("calendars")
+}
+
+model CalenderToken {
+  id          String @id @default(uuid())
+  calendar_id String @unique
+
+  id_token      String?
+  access_token  String?
+  refresh_token String?
+  scope         String?
+  token_type    String?
+  expire_at     DateTime?
+
+  calendar Calendar @relation(fields: [calendar_id], references: [id], onDelete: Cascade)
+
+  @@map("_calender_tokens")
+}
