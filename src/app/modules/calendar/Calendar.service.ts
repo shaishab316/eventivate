@@ -43,18 +43,29 @@ export const CalendarServices = {
         decodeURIComponent(state),
       );
 
+      //? Get tokens from Google oAuth2
+      const { tokens } = await googleAuth.getToken(code);
+
+      //? Set Google Auth credentials
+      googleAuth.setCredentials(tokens);
+
+      const calendar = google.calendar({ version: 'v3', auth: googleAuth });
+
+      const response = await calendar.calendarList.list();
+      const primaryCalendar = response.data.items?.find(
+        cal => cal.primary === true,
+      );
+
       //? mark as connected
       await tx.calendar.update({
         where: { id: calendar_id },
         data: {
           connected_at: new Date(),
           is_connected: true,
+          google_calender_id: primaryCalendar?.id,
         },
         select: { id: true },
       });
-
-      //? Get tokens from Google oAuth2
-      const { tokens } = await googleAuth.getToken(code);
 
       const tokenData = {
         access_token: tokens.access_token,
