@@ -6,6 +6,15 @@ import { CalendarValidations } from './Calendar.validation';
 const router = Router();
 
 /**
+ * Get My Events
+ */
+router.get(
+  '/my-events',
+  purifyRequest(CalendarValidations.getMyEvents),
+  CalendarControllers.getMyEvents,
+);
+
+/**
  * Generate Google OAuth2 Authorization URL
  */
 router.get('/generate-auth-url', CalendarControllers.generateAuthUrl);

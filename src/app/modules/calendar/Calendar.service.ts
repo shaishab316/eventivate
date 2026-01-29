@@ -1,9 +1,13 @@
+import { StatusCodes } from 'http-status-codes';
+import ServerError from '../../../errors/ServerError';
 import { prisma } from '../../../utils/db';
 import type {
   TCalenderOAuth2CallbackArgs,
+  TGetMyEventsArgs,
   TGetUserCalenderArgs,
 } from './Calendar.interface';
 import { googleAuth, GoogleTokenEncryption } from './Calendar.utils';
+import { type calendar_v3, google } from 'googleapis';
 
 export const CalendarServices = {
   /**
@@ -81,5 +85,59 @@ export const CalendarServices = {
 
       return calendarToken;
     });
+  },
+
+  async getMyEvents({
+    end_date_time,
+    start_date_time,
+    user_id,
+    limit,
+  }: TGetMyEventsArgs) {
+    const calender = await prisma.calendar.findUnique({
+      where: { user_id },
+      select: { calender_tokens: true },
+    });
+
+    if (!calender?.calender_tokens) {
+      throw new ServerError(
+        StatusCodes.BAD_REQUEST,
+        'Calendar is not connected.',
+      );
+    }
+
+    //? Set Google Auth credentials
+    googleAuth.setCredentials({
+      access_token: calender.calender_tokens.access_token,
+      refresh_token: calender.calender_tokens.refresh_token
+        ? GoogleTokenEncryption.decrypt(calender.calender_tokens.refresh_token)
+        : null,
+      expiry_date: calender.calender_tokens.expire_at
+        ? calender.calender_tokens.expire_at.getTime()
+        : null,
+      id_token: calender.calender_tokens.id_token ?? null,
+      scope: calender.calender_tokens.scope ?? '',
+      token_type: calender.calender_tokens.token_type ?? null,
+    });
+
+    const calendar = google.calendar({ version: 'v3', auth: googleAuth });
+
+    const queryParams: calendar_v3.Params$Resource$Events$List = {
+      calendarId: 'primary',
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: limit,
+    };
+
+    queryParams.timeMin = start_date_time ?? new Date().toISOString();
+
+    if (end_date_time) {
+      queryParams.timeMax = end_date_time;
+    }
+
+    const response = await calendar.events.list(queryParams);
+
+    const events = response.data.items ?? [];
+
+    return events;
   },
 };

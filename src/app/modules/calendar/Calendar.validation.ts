@@ -19,4 +19,20 @@ export const CalendarValidations = {
         .max(500, 'State is too long'),
     }),
   }),
+
+  getMyEvents: z.object({
+    query: z.object({
+      start_date_time: z.iso
+        .datetime('Start date-time is required and must be in ISO format')
+        .optional(),
+      end_date_time: z.iso
+        .datetime('End date-time is required and must be in ISO format')
+        .optional(),
+      limit: z.coerce
+        .number()
+        .min(1, 'Limit must be at least 1')
+        .max(100, 'Limit cannot exceed 100')
+        .default(10),
+    }),
+  }),
 };

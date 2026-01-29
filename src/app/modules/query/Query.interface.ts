@@ -1,6 +1,4 @@
-export type TList = {
-  page: number;
-  limit: number;
-  search?: string;
-  [key: string]: unknown;
-};
+import z from 'zod';
+import { QueryValidations } from './Query.validation';
+
+export type TList = z.infer<typeof QueryValidations.list>['query'];
