@@ -15,14 +15,14 @@ export type TGetUserCalenderArgs = {
   user_id: string;
 };
 
-export type TGetMyEventsQuery = z.infer<
-  typeof CalendarValidations.getMyEvents
+export type TGetEventsQuery = z.infer<
+  typeof CalendarValidations.getEvents
 >['query'];
 
-export type TGetMyEvents = {
-  query: TGetMyEventsQuery;
+export type TGetEvents = {
+  query: TGetEventsQuery;
 };
 
-export type TGetMyEventsArgs = TGetMyEventsQuery & {
+export type TGetEventsArgs = TGetEventsQuery & {
   user_id: string;
 };

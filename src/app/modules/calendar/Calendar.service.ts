@@ -3,7 +3,7 @@ import ServerError from '../../../errors/ServerError';
 import { prisma } from '../../../utils/db';
 import type {
   TCalenderOAuth2CallbackArgs,
-  TGetMyEventsArgs,
+  TGetEventsArgs,
   TGetUserCalenderArgs,
 } from './Calendar.interface';
 import { googleAuth, GoogleTokenEncryption } from './Calendar.utils';
@@ -98,12 +98,12 @@ export const CalendarServices = {
     });
   },
 
-  async getMyEvents({
+  async getEvents({
     end_date_time,
     start_date_time,
     user_id,
     limit,
-  }: TGetMyEventsArgs) {
+  }: TGetEventsArgs) {
     const calender = await prisma.calendar.findUnique({
       where: { user_id },
       select: { calender_tokens: true },

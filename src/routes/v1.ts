@@ -56,6 +56,7 @@ export default injectRoutes(appRouter, {
   '/agents': [AgentRoutes.free],
   '/venues': [VenueRoutes.free],
   '/payments': [PaymentRoutes.free],
+  '/calendars': [CalendarRoutes],
   '/blogs': [BlogRoutes.free],
   '/mails': [MailRoutes.free],
   '/subscriptions': [SubscriptionRoutes.free],
@@ -67,7 +68,6 @@ export default injectRoutes(appRouter, {
   '/inbox': [auth.all, ChatRoutes.all],
   '/messages': [auth.all, MessageRoutes.all],
   '/offers': [auth.allOmitUser, OfferRoutes.all],
-  '/calendars': [auth.all, CalendarRoutes],
 
   // venue can access
   '/venue': [auth.venue, VenueRoutes.venue],

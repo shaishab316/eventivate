@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { CalendarControllers } from './Calendar.controller';
 import purifyRequest from '../../middlewares/purifyRequest';
 import { CalendarValidations } from './Calendar.validation';
+import auth from '../../middlewares/auth';
 
 const router = Router();
 
@@ -9,15 +10,16 @@ const router = Router();
  * Get My Events
  */
 router.get(
-  '/my-events',
-  purifyRequest(CalendarValidations.getMyEvents),
-  CalendarControllers.getMyEvents,
+  '/events',
+  auth.all,
+  purifyRequest(CalendarValidations.getEvents),
+  CalendarControllers.getEvents,
 );
 
 /**
  * Generate Google OAuth2 Authorization URL
  */
-router.get('/generate-auth-url', CalendarControllers.generateAuthUrl);
+router.get('/generate-auth-url', auth.all, CalendarControllers.generateAuthUrl);
 
 /**
  * Handle Google OAuth2 Callback

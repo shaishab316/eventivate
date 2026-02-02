@@ -1,4 +1,5 @@
 import z from 'zod';
+import { exists } from '../../../utils/db/exists';
 
 export const CalendarValidations = {
   /**
@@ -20,7 +21,7 @@ export const CalendarValidations = {
     }),
   }),
 
-  getMyEvents: z.object({
+  getEvents: z.object({
     query: z.object({
       start_date_time: z.iso
         .datetime('Start date-time is required and must be in ISO format')
@@ -33,6 +34,12 @@ export const CalendarValidations = {
         .min(1, 'Limit must be at least 1')
         .max(100, 'Limit cannot exceed 100')
         .default(10),
+      user_id: z
+        .string()
+        .refine(exists('user'), {
+          error: ({ input }) => `User with id "${input}" does not exist`,
+        })
+        .optional(),
     }),
   }),
 };

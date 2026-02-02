@@ -1,9 +1,6 @@
 import catchAsync from '../../middlewares/catchAsync';
 import { calendarScopes } from './Calendar.constant';
-import type {
-  TGetMyEvents,
-  TCalenderOAuth2Callback,
-} from './Calendar.interface';
+import type { TGetEvents, TCalenderOAuth2Callback } from './Calendar.interface';
 import { CalendarServices } from './Calendar.service';
 import { googleAuth, GoogleTokenEncryption } from './Calendar.utils';
 
@@ -48,14 +45,16 @@ export const CalendarControllers = {
   /**
    * Get my events
    */
-  getMyEvents: catchAsync<TGetMyEvents>(async ({ query, user }) => {
-    const events = await CalendarServices.getMyEvents({
+  getEvents: catchAsync<TGetEvents>(async ({ query, user }) => {
+    const events = await CalendarServices.getEvents({
       ...query,
-      user_id: user.id,
+      user_id: query.user_id ?? user.id,
     });
 
     return {
-      message: 'Events fetched successfully',
+      message: query.user_id
+        ? 'User events fetched successfully'
+        : 'My events fetched successfully',
       data: events,
     };
   }),
