@@ -5,7 +5,7 @@ import {
 } from './User.constant';
 import { EUserRole, type Prisma, prisma } from '../../../utils/db';
 import { TPagination } from '../../../utils/server/serveResponse';
-import deleteFilesQueue from '../../../utils/mq/deleteFilesQueue';
+import { deleteFiles } from '../../middlewares/capture';
 import type { TUpdateAvailability, TUserEditArgs } from './User.interface';
 import ServerError from '../../../errors/ServerError';
 import { StatusCodes } from 'http-status-codes';
@@ -122,8 +122,7 @@ export const UserServices = {
     return prisma.$transaction(async tx => {
       const data: Prisma.UserUpdateInput = body;
 
-      if (data?.avatar && user.avatar)
-        await deleteFilesQueue.add([user.avatar]);
+      if (data?.avatar && user.avatar) await deleteFiles([user.avatar]);
 
       if (body.role && body.role !== user.role) {
         const prefix = user.is_admin
@@ -212,7 +211,7 @@ export const UserServices = {
   async deleteAccount(userId: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
-    if (user?.avatar) await deleteFilesQueue.add([user.avatar]);
+    if (user?.avatar) await deleteFiles([user.avatar]);
 
     try {
       const deleted = await prisma.$transaction(async tx => {
