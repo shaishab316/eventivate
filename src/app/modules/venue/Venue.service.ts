@@ -10,12 +10,15 @@ import { userOmit, userSearchableFields } from '../user/User.constant';
 import type {
   TCancelVenueOfferArgs,
   TGetVenueOffersArgs,
+  TSearchVenuesPayload,
   TUpdateVenueArgs,
   TVenueCreateOfferArgs,
 } from './Venue.interface';
 import { TPagination } from '../../../utils/server/serveResponse';
 import { months } from '../../../constants/month';
 import { TList } from '../query/Query.interface';
+import { omit } from '../../../utils/db/omit';
+import { venueSearchableFields } from './Venue.constant';
 
 /**
  * All venue related services
@@ -276,6 +279,151 @@ export const VenueServices = {
         } satisfies TPagination,
       },
       venues,
+    };
+  },
+
+  /**
+   * Search venues with advanced filters
+   */
+  async searchVenues({
+    limit,
+    page,
+    search,
+    venue_types,
+    location_lat,
+    location_lng,
+    min_capacity,
+    max_capacity,
+    start_date,
+    end_date,
+  }: TSearchVenuesPayload) {
+    const conditions: string[] = [
+      `role = '${EUserRole.VENUE}'`,
+      `is_active = true`,
+      `is_verified = true`,
+    ];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    // Search filter
+    if (search) {
+      const searchConditions = venueSearchableFields
+        .map(field => `LOWER(${field}) LIKE LOWER($${paramIndex})`)
+        .join(' OR ');
+      conditions.push(`(${searchConditions})`);
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    // Venue types filter
+    if (venue_types?.length) {
+      conditions.push(`venue_type = ANY($${paramIndex})`);
+      params.push(venue_types);
+      paramIndex++;
+    }
+
+    // Capacity filter
+    if (min_capacity !== undefined || max_capacity !== undefined) {
+      if (min_capacity !== undefined && max_capacity !== undefined) {
+        conditions.push(
+          `capacity BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+        );
+        params.push(min_capacity, max_capacity);
+        paramIndex += 2;
+      } else if (min_capacity !== undefined) {
+        conditions.push(`capacity >= $${paramIndex}`);
+        params.push(min_capacity);
+        paramIndex++;
+      } else if (max_capacity !== undefined) {
+        conditions.push(`capacity <= $${paramIndex}`);
+        params.push(max_capacity);
+        paramIndex++;
+      }
+    }
+
+    // Availability date filter
+    if (start_date && end_date) {
+      conditions.push(`
+      EXISTS (
+        SELECT 1 FROM unnest(availability) AS avail_date
+        WHERE avail_date >= $${paramIndex}::timestamp 
+        AND avail_date <= $${paramIndex + 1}::timestamp
+      )
+    `);
+      params.push(new Date(start_date), new Date(end_date));
+      paramIndex += 2;
+    }
+
+    // Location filter (within ~50km radius)
+    if (location_lat !== undefined && location_lng !== undefined) {
+      const RADIUS_KM = 50;
+      const LAT_DEGREE_PER_KM = 1 / 111;
+      const LNG_DEGREE_PER_KM =
+        1 / (111 * Math.cos(location_lat * (Math.PI / 180)));
+
+      conditions.push(
+        `location_lat BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+      );
+      conditions.push(
+        `location_lng BETWEEN $${paramIndex + 2} AND $${paramIndex + 3}`,
+      );
+      params.push(
+        location_lat - RADIUS_KM * LAT_DEGREE_PER_KM,
+        location_lat + RADIUS_KM * LAT_DEGREE_PER_KM,
+        location_lng - RADIUS_KM * LNG_DEGREE_PER_KM,
+        location_lng + RADIUS_KM * LNG_DEGREE_PER_KM,
+      );
+      paramIndex += 4;
+    }
+
+    const whereClause = conditions.join(' AND ');
+
+    params.push(limit, (page - 1) * limit);
+
+    const venues: any[] = await prisma.$queryRawUnsafe(
+      `
+    SELECT * FROM users
+    WHERE ${whereClause}
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `,
+      ...params,
+    );
+
+    const [{ count }] = await prisma.$queryRawUnsafe<[{ count: bigint }]>(
+      `
+    SELECT COUNT(*) as count FROM users
+    WHERE ${whereClause}
+  `,
+      ...params.slice(0, -2), // Exclude LIMIT and OFFSET params
+    );
+
+    const total = Number(count);
+
+    const totalVenueTypes = await prisma.user.findMany({
+      where: {
+        role: EUserRole.VENUE,
+      },
+      distinct: ['venue_type'],
+      select: {
+        venue_type: true,
+      },
+    });
+
+    return {
+      meta: {
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        } satisfies TPagination,
+        total_venue_types: Array.from(
+          new Set(
+            totalVenueTypes.map(({ venue_type }) => venue_type?.toLowerCase()),
+          ),
+        ).filter(Boolean),
+      },
+      venues: venues?.map(venue => omit(venue, userOmit.VENUE)),
     };
   },
 };

@@ -33,3 +33,17 @@ export type TGetVenueOffersArgs = TList &
   z.infer<typeof VenueValidations.getMyOffers>['query'] & {
     venue_id: string;
   };
+
+/**
+ * Type for search venues
+ */
+export type TSearchVenuesQuery = z.infer<
+  typeof VenueValidations.searchVenues
+>['query'] &
+  TList;
+
+export type TSearchVenues = {
+  query: TSearchVenuesQuery;
+};
+
+export type TSearchVenuesPayload = TSearchVenuesQuery;

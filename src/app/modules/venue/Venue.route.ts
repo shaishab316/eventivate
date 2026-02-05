@@ -58,6 +58,12 @@ const all = Router();
     purifyRequest(QueryValidations.list),
     VenueControllers.getAllVenues,
   );
+
+  all.get(
+    '/search-venues',
+    purifyRequest(QueryValidations.list, VenueValidations.searchVenues),
+    VenueControllers.searchVenues,
+  );
 }
 
 export const VenueRoutes = {

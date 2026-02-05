@@ -1,6 +1,6 @@
 import { EUserRole } from '../../../utils/db';
 import catchAsync from '../../middlewares/catchAsync';
-import { TCancelVenueOfferArgs } from './Venue.interface';
+import { TCancelVenueOfferArgs, TSearchVenues } from './Venue.interface';
 import { VenueServices } from './Venue.service';
 
 /**
@@ -89,6 +89,19 @@ export const VenueControllers = {
    */
   getAllVenues: catchAsync(async ({ query }) => {
     const { meta, venues } = await VenueServices.getAllVenues(query);
+
+    return {
+      message: 'Venues retrieved successfully!',
+      meta,
+      data: venues,
+    };
+  }),
+
+  /**
+   * Search venues
+   */
+  searchVenues: catchAsync<TSearchVenues>(async ({ query }) => {
+    const { meta, venues } = await VenueServices.searchVenues(query);
 
     return {
       message: 'Venues retrieved successfully!',

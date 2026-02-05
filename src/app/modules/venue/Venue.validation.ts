@@ -9,6 +9,21 @@ import {
 import { exists } from '../../../utils/db/exists';
 
 /**
+ * Shared validation utils
+ */
+const _ = {
+  location_lat: z.coerce
+    .number('Location latitude is required')
+    .min(-90, 'Location latitude must be at least -90')
+    .max(90, 'Location latitude must be at most 90'),
+
+  location_lng: z.coerce
+    .number('Location longitude is required')
+    .min(-180, 'Location longitude must be at least -180')
+    .max(180, 'Location longitude must be at most 180'),
+};
+
+/**
  * Validation for venue
  */
 export const VenueValidations = {
@@ -61,6 +76,25 @@ export const VenueValidations = {
   getMyOffers: z.object({
     query: z.object({
       status: z.enum(EVenueOfferStatus).default(EVenueOfferStatus.PENDING),
+    }),
+  }),
+
+  /**
+   * Validation schema for search venues
+   */
+  searchVenues: z.object({
+    query: z.object({
+      venue_types: z
+        .string()
+        .trim()
+        .transform(({ split }) => split(','))
+        .optional(),
+      min_capacity: z.coerce.number().optional(),
+      max_capacity: z.coerce.number().optional(),
+      location_lat: _.location_lat.optional(),
+      location_lng: _.location_lng.optional(),
+      start_date: z.iso.datetime().optional(),
+      end_date: z.iso.datetime().optional(),
     }),
   }),
 };
