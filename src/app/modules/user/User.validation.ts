@@ -27,6 +27,16 @@ const _ = {
     .trim()
     .min(1, 'Location is required'),
 
+  location_lat: z.coerce
+    .number('Location latitude is required')
+    .min(-90, 'Location latitude must be at least -90')
+    .max(90, 'Location latitude must be at most 90'),
+
+  location_lng: z.coerce
+    .number('Location longitude is required')
+    .min(-180, 'Location longitude must be at least -180')
+    .max(180, 'Location longitude must be at most 180'),
+
   role: z.enum(EUserRole),
 
   is_active: z.boolean('is_active is required'),
@@ -129,6 +139,13 @@ export const UserValidations = {
       capacity: _.capacity,
       venue_type: _.venue_type,
       location: _.location,
+
+      /**
+       * location_lat and location_lng are included to support geolocation features,
+       * enabling functionalities like nearby searches and location-based services.
+       */
+      location_lat: _.location_lat,
+      location_lng: _.location_lng,
     } satisfies TModelZod<TUser>),
   }),
 
@@ -142,6 +159,13 @@ export const UserValidations = {
       genre: _.genre,
       price: _.price,
       location: _.location,
+
+      /**
+       * location_lat and location_lng are included to support geolocation features,
+       * enabling functionalities like nearby searches and location-based services.
+       */
+      location_lat: _.location_lat,
+      location_lng: _.location_lng,
     } satisfies TModelZod<TUser>),
   }),
 

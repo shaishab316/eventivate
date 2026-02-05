@@ -235,7 +235,7 @@ const config = {
     ),
     redirect_uri: env(
       'google oauth redirect uri',
-      `http://localhost:${port}/api/v1/auth/google/callback`,
+      `http://localhost:${port}/api/v1/calendars/google-auth-callback`,
       {
         regex: '^https?:\\/\\/.*$|^$',
         down: 'Google OAuth - end',

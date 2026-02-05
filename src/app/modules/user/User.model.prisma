@@ -20,6 +20,9 @@ model User {
   name     String  @default("Getavails User")
   gender   EGender @default(OTHER)
   location String?
+
+  location_lat Float?
+  location_lng Float?
   //! end
 
   //! payment
