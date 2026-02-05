@@ -6,7 +6,7 @@ import type {
 } from '../organizer/Organizer.interface';
 import ServerError from '../../../errors/ServerError';
 import { TWithdrawArgs } from './Payment.interface';
-import stripeAccountConnectQueue from '../../../utils/mq/stripeAccountConnectQueue';
+import { UserServices } from '../user/User.service';
 import withdrawQueue from '../../../utils/mq/withdrawQueue';
 import Stripe from 'stripe';
 import { stripe } from './Payment.utils';
@@ -188,7 +188,7 @@ export const PaymentServices = {
     }
 
     if (!user.stripe_account_id) {
-      await stripeAccountConnectQueue.add({ user_id: user.id });
+      await UserServices.stripeAccountConnect({ user_id: user.id });
 
       throw new ServerError(
         StatusCodes.ACCEPTED,

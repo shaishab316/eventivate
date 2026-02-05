@@ -15,7 +15,9 @@ import { sendEmail } from '../../../utils/sendMail';
 import { errorLogger } from '../../../utils/logger';
 import { emailTemplate } from '../../../templates/emailTemplate';
 import config from '../../../config';
-import stripeAccountConnectQueue from '../../../utils/mq/stripeAccountConnectQueue';
+import { stripe } from '../payment/Payment.utils';
+import ora from 'ora';
+import chalk from 'chalk';
 
 /**
  * User services
@@ -79,7 +81,7 @@ export const UserServices = {
       });
 
       if (!user.stripe_account_id) {
-        await stripeAccountConnectQueue.add({
+        await this.stripeAccountConnect({
           user_id: user.id,
         });
       }
@@ -250,5 +252,51 @@ export const UserServices = {
       },
       select: { id: true },
     });
+  },
+
+  /**
+   * Stripe account connect
+   */
+  async stripeAccountConnect(data: { user_id: string }) {
+    const user = await prisma.user.findUnique({
+      where: { id: data.user_id },
+      select: {
+        stripe_account_id: true,
+        email: true,
+      },
+    });
+
+    if (!user) return;
+
+    if (!user.stripe_account_id) {
+      const spinner = ora({
+        color: 'yellow',
+        text: `Checking Stripe account for ${user.email}`,
+      }).start();
+
+      try {
+        const stripeAccount = await stripe.accounts.create({
+          type: 'express',
+          email: user.email,
+          capabilities: {
+            transfers: { requested: true },
+          },
+        });
+
+        await prisma.user.update({
+          where: { id: data.user_id },
+          data: { stripe_account_id: stripeAccount.id },
+        });
+
+        spinner.succeed(`Stripe account created for ${user.email}`);
+      } catch (error) {
+        spinner.fail(`Failed creating Stripe account for ${user.email}`);
+
+        errorLogger.error(
+          chalk.red(`Error creating Stripe account for ${user.email}`),
+          error,
+        );
+      }
+    }
   },
 };
