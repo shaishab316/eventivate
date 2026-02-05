@@ -2,6 +2,21 @@ import z from 'zod';
 import { exists } from '../../../utils/db/exists';
 
 /**
+ * Shared validation utils
+ */
+const _ = {
+  location_lat: z.coerce
+    .number('Location latitude is required')
+    .min(-90, 'Location latitude must be at least -90')
+    .max(90, 'Location latitude must be at most 90'),
+
+  location_lng: z.coerce
+    .number('Location longitude is required')
+    .min(-180, 'Location longitude must be at least -180')
+    .max(180, 'Location longitude must be at most 180'),
+};
+
+/**
  * Validation for artist
  */
 export const ArtistValidations = {
@@ -38,6 +53,27 @@ export const ArtistValidations = {
         error: ({ input }) => `Agent not found with id: ${input}`,
         path: ['agent_id'],
       }),
+    }),
+  }),
+
+  /**
+   * Validation schema for search artists
+   */
+  searchArtists: z.object({
+    query: z.object({
+      genres: z
+        .string()
+        .trim()
+        .transform(({ split }) => split(','))
+        .optional(),
+      location_lat: _.location_lat.optional(),
+      location_lng: _.location_lng.optional(),
+      dates: z
+        .string()
+        .trim()
+        .transform(({ split }) => split(','))
+        .pipe(z.array(z.iso.datetime().transform(date => new Date(date))))
+        .optional(),
     }),
   }),
 };

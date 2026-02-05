@@ -14,6 +14,7 @@ import type {
   TGetAgentList,
   TInviteAgent,
   TProcessArtistRequest,
+  TSearchArtistsPayload,
 } from './Artist.interface';
 import { userOmit } from '../user/User.constant';
 import { agentSearchableFields } from '../agent/Agent.constant';
@@ -355,6 +356,89 @@ export const ArtistServices = {
       totalBookings,
       monthlyBookingStatistics,
       monthlyRevenueStatistics,
+    };
+  },
+
+  /**
+   * Search artists
+   */
+  async searchArtists({
+    limit,
+    page,
+    search,
+    dates,
+    genres,
+    location_lat,
+    location_lng,
+  }: TSearchArtistsPayload) {
+    const whereArtist: Prisma.UserWhereInput = {
+      role: EUserRole.ARTIST,
+    };
+
+    //? Search artist using searchable fields
+    if (search) {
+      whereArtist.OR = artistSearchableFields.map(field => ({
+        [field]: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      }));
+    }
+
+    //? genres filter
+    if (genres?.length) {
+      whereArtist.genre = {
+        in: genres,
+      };
+    }
+
+    //? availability date filter
+    if (dates?.length) {
+      whereArtist.availability = {
+        hasSome: dates,
+      };
+    }
+
+    //? location filter (within ~50km radius)
+    if (location_lat !== undefined && location_lng !== undefined) {
+      const RADIUS_KM = 50;
+      const LAT_DEGREE_PER_KM = 1 / 111; // ~0.009
+
+      // Longitude degrees are smaller at higher latitudes
+      const LNG_DEGREE_PER_KM =
+        1 / (111 * Math.cos(location_lat * (Math.PI / 180)));
+
+      whereArtist.location_lat = {
+        gte: location_lat - RADIUS_KM * LAT_DEGREE_PER_KM,
+        lte: location_lat + RADIUS_KM * LAT_DEGREE_PER_KM,
+      };
+
+      whereArtist.location_lng = {
+        gte: location_lng - RADIUS_KM * LNG_DEGREE_PER_KM,
+        lte: location_lng + RADIUS_KM * LNG_DEGREE_PER_KM,
+      };
+    }
+
+    const artists = await prisma.user.findMany({
+      where: whereArtist,
+      skip: (page - 1) * limit,
+      take: limit,
+      //? exclude unnecessary fields
+      omit: userOmit.ARTIST,
+    });
+
+    const total = await prisma.user.count({ where: whereArtist });
+
+    return {
+      meta: {
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        } satisfies TPagination,
+      },
+      artists,
     };
   },
 };

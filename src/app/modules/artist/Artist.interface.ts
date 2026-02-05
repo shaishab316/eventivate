@@ -30,3 +30,17 @@ export type TProcessArtistRequest = z.infer<
 export type TGetAgentList = TList & {
   agent_ids: string[];
 };
+
+/**
+ * @type: Search artists
+ */
+export type TSearchArtistsQuery = z.infer<
+  typeof ArtistValidations.searchArtists
+>['query'] &
+  TList;
+
+export type TSearchArtists = {
+  query: TSearchArtistsQuery;
+};
+
+export type TSearchArtistsPayload = TSearchArtistsQuery;

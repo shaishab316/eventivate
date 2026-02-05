@@ -19,7 +19,11 @@ router.get(
 /**
  * Generate Google OAuth2 Authorization URL
  */
-router.post('/generate-auth-url', auth.all, CalendarControllers.generateAuthUrl);
+router.post(
+  '/generate-auth-url',
+  auth.all,
+  CalendarControllers.generateAuthUrl,
+);
 
 /**
  * Handle Google OAuth2 Callback

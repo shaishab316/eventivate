@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import ServerError from '../../../errors/ServerError';
 import catchAsync from '../../middlewares/catchAsync';
 import { ArtistServices } from './Artist.service';
+import type { TSearchArtists } from './Artist.interface';
 
 /**
  * All artist related controllers
@@ -144,6 +145,19 @@ export const ArtistControllers = {
         agent_requests: artist.artist_pending_agents.length,
         ...overview,
       },
+    };
+  }),
+
+  /**
+   * Search artists
+   */
+  searchArtists: catchAsync<TSearchArtists>(async ({ query }) => {
+    const { artists, meta } = await ArtistServices.searchArtists(query);
+
+    return {
+      message: 'Artists retrieved successfully!',
+      meta,
+      data: artists,
     };
   }),
 };

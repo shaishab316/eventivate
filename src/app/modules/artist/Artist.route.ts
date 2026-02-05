@@ -25,6 +25,15 @@ const free = Router();
     purifyRequest(QueryValidations.list),
     ArtistControllers.getNewArtists,
   );
+
+  /**
+   * Search artists
+   */
+  free.get(
+    '/search-artists',
+    purifyRequest(ArtistValidations.searchArtists),
+    ArtistControllers.searchArtists,
+  );
 }
 
 const artist = Router();
