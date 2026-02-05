@@ -7,10 +7,12 @@ import type {
 import ServerError from '../../../errors/ServerError';
 import { TWithdrawArgs } from './Payment.interface';
 import { UserServices } from '../user/User.service';
-import withdrawQueue from '../../../utils/mq/withdrawQueue';
 import Stripe from 'stripe';
 import { stripe } from './Payment.utils';
 import { TTicketMetadata } from '../ticket/Ticket.interface';
+import config from '../../../config';
+import ora from 'ora';
+import chalk from 'chalk';
 
 /**
  * Payment Services
@@ -196,7 +198,68 @@ export const PaymentServices = {
       );
     }
 
-    await withdrawQueue.add({ amount, user });
+    const spinner = ora({
+      color: 'yellow',
+      text: `Withdrawing ${amount} from ${user.email}`,
+    }).start();
+
+    try {
+      spinner.text = `Checking Stripe account and balance for ${user.email}`;
+
+      if (!user?.stripe_account_id) {
+        throw new Error('Stripe account not found');
+      }
+
+      //? ensure user has enough balance
+      if (user.balance < amount) {
+        throw new Error(
+          `Insufficient balance, current balance: ${user.balance}, required balance: ${amount} ${config.payment.currency}`,
+        );
+      }
+
+      spinner.text = `Transferring ${amount} ${config.payment.currency} to ${user.email}`;
+
+      await stripe.transfers.create({
+        amount: amount * 100,
+        currency: config.payment.currency,
+        destination: user.stripe_account_id,
+        description: `Transfer to ${user.email}`,
+      });
+
+      spinner.text = `Retrieving balance for ${user.email}`;
+
+      const balance = (
+        await stripe.balance.retrieve({ stripeAccount: user.stripe_account_id })
+      ).available.find(b => b.currency === config.payment.currency)?.amount;
+
+      if (!balance) {
+        throw new Error('Transfer failed');
+      }
+
+      spinner.text = `Payout ${balance / 100} ${config.payment.currency} to ${user.email}`;
+
+      await stripe.payouts.create(
+        { amount: balance, currency: config.payment.currency },
+        { stripeAccount: user.stripe_account_id },
+      );
+
+      spinner.text = `Updating balance for ${user.email}`;
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { balance: { decrement: amount } },
+      });
+
+      spinner.succeed(
+        chalk.green(
+          `${amount} ${config.payment.currency} withdrawn successfully to ${user.email}`,
+        ),
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        spinner.fail(chalk.red(`Withdrawal failed: ${error.message}`));
+      }
+    }
   },
 
   /**
