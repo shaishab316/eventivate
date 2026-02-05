@@ -66,6 +66,12 @@ model User {
   offers_as_tour_manager  Offer[]       @relation("OfferTourManager")
   calendar                Calendar?
 
+  @@index([role, is_active, is_verified])
+  @@index([location_lat, location_lng])
+  @@index([genre])
+  @@index([role, is_active, is_verified, genre])
+  @@index([name])
+  @@index([location])
   @@map("users")
 }
 

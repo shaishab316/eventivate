@@ -68,12 +68,8 @@ export const ArtistValidations = {
         .optional(),
       location_lat: _.location_lat.optional(),
       location_lng: _.location_lng.optional(),
-      dates: z
-        .string()
-        .trim()
-        .transform(({ split }) => split(','))
-        .pipe(z.array(z.iso.datetime().transform(date => new Date(date))))
-        .optional(),
+      start_date: z.iso.datetime().optional(),
+      end_date: z.iso.datetime().optional(),
     }),
   }),
 };

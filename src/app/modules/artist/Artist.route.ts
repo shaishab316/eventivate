@@ -31,7 +31,7 @@ const free = Router();
    */
   free.get(
     '/search-artists',
-    purifyRequest(ArtistValidations.searchArtists),
+    purifyRequest(QueryValidations.list, ArtistValidations.searchArtists),
     ArtistControllers.searchArtists,
   );
 }

@@ -21,7 +21,7 @@
     "new-module": "tsx ./src/app/modules/.builder.ts",
     "build": "tsx esbuild.mts",
     "start": "npx dotenvx run -- node dist/server.js",
-    "dev": "npm run type-check && set DEBUG=socket.io* && npx dotenvx run -- tsx --watch src/server.ts",
+    "dev": "npx dotenvx run -- tsx --watch src/server.ts",
     "dev-f5": "npx dotenvx run -- tsx --watch --inspect src/server.ts",
     "seed-admin": "npx dotenvx run -- tsx scripts/seedAdmin.ts",
     "seed-stripe": "npx dotenvx run -- tsx scripts/seedStripe.ts",

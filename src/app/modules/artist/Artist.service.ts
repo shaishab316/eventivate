@@ -19,6 +19,7 @@ import type {
 import { userOmit } from '../user/User.constant';
 import { agentSearchableFields } from '../agent/Agent.constant';
 import { months } from '../../../constants/month';
+import { omit } from '../../../utils/db/omit';
 
 /**
  * All artist related services
@@ -366,68 +367,90 @@ export const ArtistServices = {
     limit,
     page,
     search,
-    dates,
     genres,
     location_lat,
     location_lng,
+    start_date,
+    end_date,
   }: TSearchArtistsPayload) {
-    const whereArtist: Prisma.UserWhereInput = {
-      role: EUserRole.ARTIST,
-    };
+    const conditions: string[] = [
+      `role = '${EUserRole.ARTIST}'`,
+      `is_active = true`,
+      `is_verified = true`,
+    ];
+    const params: any[] = [];
+    let paramIndex = 1;
 
-    //? Search artist using searchable fields
     if (search) {
-      whereArtist.OR = artistSearchableFields.map(field => ({
-        [field]: {
-          contains: search,
-          mode: 'insensitive',
-        },
-      }));
+      const searchConditions = artistSearchableFields
+        .map(field => `LOWER(${field}) LIKE LOWER($${paramIndex})`)
+        .join(' OR ');
+      conditions.push(`(${searchConditions})`);
+      params.push(`%${search}%`);
+      paramIndex++;
     }
 
-    //? genres filter
     if (genres?.length) {
-      whereArtist.genre = {
-        in: genres,
-      };
+      conditions.push(`genre = ANY($${paramIndex})`);
+      params.push(genres);
+      paramIndex++;
     }
 
-    //? availability date filter
-    if (dates?.length) {
-      whereArtist.availability = {
-        hasSome: dates,
-      };
+    if (start_date && end_date) {
+      conditions.push(`
+      EXISTS (
+        SELECT 1 FROM unnest(availability) AS avail_date
+        WHERE avail_date >= $${paramIndex}::timestamp 
+        AND avail_date <= $${paramIndex + 1}::timestamp
+      )
+    `);
+      params.push(new Date(start_date), new Date(end_date));
+      paramIndex += 2;
     }
 
-    //? location filter (within ~50km radius)
     if (location_lat !== undefined && location_lng !== undefined) {
       const RADIUS_KM = 50;
-      const LAT_DEGREE_PER_KM = 1 / 111; // ~0.009
-
-      // Longitude degrees are smaller at higher latitudes
+      const LAT_DEGREE_PER_KM = 1 / 111;
       const LNG_DEGREE_PER_KM =
         1 / (111 * Math.cos(location_lat * (Math.PI / 180)));
 
-      whereArtist.location_lat = {
-        gte: location_lat - RADIUS_KM * LAT_DEGREE_PER_KM,
-        lte: location_lat + RADIUS_KM * LAT_DEGREE_PER_KM,
-      };
-
-      whereArtist.location_lng = {
-        gte: location_lng - RADIUS_KM * LNG_DEGREE_PER_KM,
-        lte: location_lng + RADIUS_KM * LNG_DEGREE_PER_KM,
-      };
+      conditions.push(
+        `location_lat BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+      );
+      conditions.push(
+        `location_lng BETWEEN $${paramIndex + 2} AND $${paramIndex + 3}`,
+      );
+      params.push(
+        location_lat - RADIUS_KM * LAT_DEGREE_PER_KM,
+        location_lat + RADIUS_KM * LAT_DEGREE_PER_KM,
+        location_lng - RADIUS_KM * LNG_DEGREE_PER_KM,
+        location_lng + RADIUS_KM * LNG_DEGREE_PER_KM,
+      );
+      paramIndex += 4;
     }
 
-    const artists = await prisma.user.findMany({
-      where: whereArtist,
-      skip: (page - 1) * limit,
-      take: limit,
-      //? exclude unnecessary fields
-      omit: userOmit.ARTIST,
-    });
+    const whereClause = conditions.join(' AND ');
 
-    const total = await prisma.user.count({ where: whereArtist });
+    params.push(limit, (page - 1) * limit);
+
+    const artists: any[] = await prisma.$queryRawUnsafe(
+      `
+    SELECT * FROM users
+    WHERE ${whereClause}
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `,
+      ...params,
+    );
+
+    const [{ count }] = await prisma.$queryRawUnsafe<[{ count: bigint }]>(
+      `
+    SELECT COUNT(*) as count FROM users
+    WHERE ${whereClause}
+  `,
+      ...params.slice(0, -2),
+    );
+
+    const total = Number(count);
 
     return {
       meta: {
@@ -438,7 +461,7 @@ export const ArtistServices = {
           totalPages: Math.ceil(total / limit),
         } satisfies TPagination,
       },
-      artists,
+      artists: artists?.map(artist => omit(artist, userOmit.ARTIST)),
     };
   },
 };
