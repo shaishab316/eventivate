@@ -452,6 +452,16 @@ export const ArtistServices = {
 
     const total = Number(count);
 
+    const totalGenres = await prisma.user.findMany({
+      where: {
+        role: EUserRole.ARTIST,
+      },
+      distinct: ['genre'],
+      select: {
+        genre: true,
+      },
+    });
+
     return {
       meta: {
         pagination: {
@@ -460,6 +470,9 @@ export const ArtistServices = {
           total,
           totalPages: Math.ceil(total / limit),
         } satisfies TPagination,
+        total_genres: Array.from(
+          new Set(totalGenres.map(({ genre }) => genre?.toLowerCase())),
+        ),
       },
       artists: artists?.map(artist => omit(artist, userOmit.ARTIST)),
     };
