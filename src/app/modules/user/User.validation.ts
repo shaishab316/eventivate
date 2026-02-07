@@ -10,7 +10,7 @@ const _ = {
     .min(1, 'Name is required')
     .max(100, 'Name must be at most 100 characters long'),
 
-  email: z.email('Email is invalid'),
+  email: z.email('Email is invalid').transform(email => email.toLowerCase()),
 
   password: z
     .string('Password is missing')
@@ -196,3 +196,5 @@ export const UserValidations = {
     } satisfies TModelZod<TUser>),
   }),
 };
+
+export const userSharedValidation = _;
