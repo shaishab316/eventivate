@@ -1,0 +1,27 @@
+model OfferpostGigRequest {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  gig_id String
+  gig    OfferpostGig @relation(fields: [gig_id], references: [id], onDelete: Cascade)
+
+  requester_id String?
+  requester    User?   @relation(fields: [requester_id], references: [id], onDelete: SetNull)
+
+  referenced_offerpost_id String?
+  referenced_offerpost    Offerpost? @relation(fields: [referenced_offerpost_id], references: [id], onDelete: SetNull)
+
+  message String?
+
+  status EOfferpostGigRequestStatus @default(PENDING)
+
+  @@index([gig_id])
+  @@index([requester_id])
+}
+
+enum EOfferpostGigRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

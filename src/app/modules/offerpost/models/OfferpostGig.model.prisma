@@ -1,0 +1,58 @@
+model OfferpostGig {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  owner_id   String
+  owner      User      @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  owner_role EUserRole
+
+  // if artist
+  genre String?
+
+  title       String
+  description String
+  banner_url  String?
+
+  keywords String[] @default([])
+
+  location     String @default("N/A")
+  location_lat Float?
+  location_lng Float?
+
+  budget_min Float @default(0)
+  budget_max Float @default(0)
+
+  target_for_agents     Boolean @default(false)
+  target_for_artists    Boolean @default(false)
+  target_for_venues     Boolean @default(false)
+  target_for_organizers Boolean @default(false)
+  target_for_managers   Boolean @default(false)
+
+  is_active                    Boolean                    @default(true)
+  offerpost_gig_availabilities OfferpostGigAvailability[]
+
+  offerposts             Offerpost[]           @relation("GigOfferposts")
+  offerpost_gig_requests OfferpostGigRequest[]
+
+  @@index([owner_id])
+  @@index([owner_role])
+  @@index([genre])
+  @@index([keywords])
+  @@index([location_lat, location_lng])
+  @@index([budget_min, budget_max])
+  @@index([target_for_agents, target_for_artists, target_for_venues, target_for_organizers, target_for_managers])
+  @@map("offerpost_gigs")
+}
+
+model OfferpostGigAvailability {
+  id String @id @default(uuid())
+
+  gig_id String
+  gig    OfferpostGig @relation(fields: [gig_id], references: [id], onDelete: Cascade)
+
+  available_date_from DateTime @db.Date()
+  available_date_to   DateTime @db.Date()
+  available_time_from DateTime @db.Time()
+  available_time_to   DateTime @db.Time()
+}
