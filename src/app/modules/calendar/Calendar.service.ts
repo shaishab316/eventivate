@@ -106,7 +106,7 @@ export const CalendarServices = {
   }: TGetEventsArgs) {
     const calender = await prisma.calendar.findUnique({
       where: { user_id },
-      select: { calender_tokens: true },
+      select: { calender_tokens: true, id: true },
     });
 
     if (!calender?.calender_tokens) {
@@ -128,6 +128,25 @@ export const CalendarServices = {
       id_token: calender.calender_tokens.id_token ?? null,
       scope: calender.calender_tokens.scope ?? '',
       token_type: calender.calender_tokens.token_type ?? null,
+    });
+
+    googleAuth.on('tokens', async tokens => {
+      if (tokens.refresh_token) {
+        await prisma.calenderToken.update({
+          where: { calendar_id: calender.id },
+          data: {
+            refresh_token: GoogleTokenEncryption.encrypt(tokens.refresh_token),
+          },
+        });
+      }
+
+      await prisma.calenderToken.update({
+        where: { calendar_id: calender.id },
+        data: {
+          access_token: tokens.access_token,
+          expire_at: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+        },
+      });
     });
 
     const calendar = google.calendar({ version: 'v3', auth: googleAuth });

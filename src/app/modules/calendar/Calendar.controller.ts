@@ -1,3 +1,5 @@
+import { prisma } from '../../../utils/db';
+import { errorLogger } from '../../../utils/logger';
 import catchAsync from '../../middlewares/catchAsync';
 import { calendarScopes } from './Calendar.constant';
 import type { TGetEvents, TCalenderOAuth2Callback } from './Calendar.interface';
@@ -46,16 +48,46 @@ export const CalendarControllers = {
    * Get my events
    */
   getEvents: catchAsync<TGetEvents>(async ({ query, user }) => {
-    const events = await CalendarServices.getEvents({
-      ...query,
-      user_id: query.user_id ?? user.id,
-    });
+    try {
+      const events = await CalendarServices.getEvents({
+        ...query,
+        user_id: query.user_id ?? user.id,
+      });
 
-    return {
-      message: query.user_id
-        ? 'User events fetched successfully'
-        : 'My events fetched successfully',
-      data: events,
-    };
+      return {
+        message: query.user_id
+          ? 'User events fetched successfully'
+          : 'My events fetched successfully',
+        meta: {
+          is_connected: true,
+        },
+        data: events,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        errorLogger.error('Failed to fetch Google Calendar events', {
+          userId: user.id,
+          error: {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          },
+        });
+      }
+
+      await prisma.calendar.updateMany({
+        where: { user_id: user.id },
+        data: { is_connected: false, disconnected_at: new Date() },
+      });
+
+      return {
+        message:
+          'Failed to fetch events. Please ensure your calendar is connected.',
+        meta: {
+          is_connected: false,
+        },
+        data: [],
+      };
+    }
   }),
 };
