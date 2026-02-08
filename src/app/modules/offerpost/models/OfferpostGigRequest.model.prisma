@@ -18,6 +18,9 @@ model OfferpostGigRequest {
 
   @@index([gig_id])
   @@index([requester_id])
+  @@index([referenced_offerpost_id])
+  @@index([status])
+  @@map("offerpost_gig_requests")
 }
 
 enum EOfferpostGigRequestStatus {

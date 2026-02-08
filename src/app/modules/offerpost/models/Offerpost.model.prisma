@@ -6,11 +6,8 @@ model Offerpost {
   owner_id String?
   owner    User?   @relation("UserOfferposts", fields: [owner_id], references: [id], onDelete: SetNull)
 
-  member_ids String[] @default([])
-  members    User[]   @relation("OfferpostMembers")
-
-  admin_ids String[] @default([])
-  admins    User[]   @relation("OfferpostAdmins")
+  members User[] @relation("OfferpostMembers")
+  admins  User[] @relation("OfferpostAdmins")
 
   status EOfferpostStatus @default(PENDING)
 
@@ -20,6 +17,8 @@ model Offerpost {
   connected_gigs         OfferpostGig[]        @relation("GigOfferposts")
   offerpost_gig_requests OfferpostGigRequest[]
 
+  @@index([owner_id])
+  @@index([status])
   @@map("offerposts")
 }
 

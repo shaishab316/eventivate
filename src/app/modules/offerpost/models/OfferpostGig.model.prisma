@@ -41,6 +41,7 @@ model OfferpostGig {
   @@index([keywords])
   @@index([location_lat, location_lng])
   @@index([budget_min, budget_max])
+  @@index([is_active])
   @@index([target_for_agents, target_for_artists, target_for_venues, target_for_organizers, target_for_managers])
   @@map("offerpost_gigs")
 }
@@ -51,8 +52,12 @@ model OfferpostGigAvailability {
   gig_id String
   gig    OfferpostGig @relation(fields: [gig_id], references: [id], onDelete: Cascade)
 
-  available_date_from DateTime @db.Date()
-  available_date_to   DateTime @db.Date()
-  available_time_from DateTime @db.Time()
-  available_time_to   DateTime @db.Time()
+  available_date_from DateTime @db.Date
+  available_date_to   DateTime @db.Date
+  available_time_from DateTime @db.Time
+  available_time_to   DateTime @db.Time
+
+  @@index([gig_id])
+  @@index([available_date_from, available_date_to])
+  @@map("offerpost_gig_availabilities")
 }

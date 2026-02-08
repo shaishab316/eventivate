@@ -13,7 +13,10 @@ model OfferpostMsg {
   attachment_url  String?
   attachment_type EOfferpostMsgAttachmentType?
 
-  @@map("offer_msgs")
+  @@index([offerpost_id])
+  @@index([sender_id])
+  @@index([created_at])
+  @@map("offerpost_msgs")
 }
 
 enum EOfferpostMsgAttachmentType {

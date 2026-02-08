@@ -66,12 +66,12 @@ model User {
   offers_as_tour_manager  Offer[]       @relation("OfferTourManager")
   calendar                Calendar?
 
-  offerposts                  Offerpost[]           @relation("UserOfferposts")
-  offerpost_memberships       Offerpost[]           @relation("OfferpostMembers")
-  offerpost_admin_memberships Offerpost[]           @relation("OfferpostAdmins")
-  offerpost_msgs              OfferpostMsg[]
-  offerpost_gigs              OfferpostGig[]
-  offerpost_gig_requests      OfferpostGigRequest[]
+  offerposts             Offerpost[]           @relation("UserOfferposts")
+  offerpost_memberships  Offerpost[]           @relation("OfferpostMembers")
+  offerpost_admin_roles  Offerpost[]           @relation("OfferpostAdmins")
+  offerpost_msgs         OfferpostMsg[]
+  offerpost_gigs         OfferpostGig[]
+  offerpost_gig_requests OfferpostGigRequest[]
 
   @@index([role, is_active, is_verified])
   @@index([location_lat, location_lng])
