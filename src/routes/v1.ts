@@ -21,6 +21,7 @@ import { TransactionRoutes } from '../app/modules/transaction/Transaction.route'
 import { MailRoutes } from '../app/modules/mail/Mail.route';
 import { OfferRoutes } from '../app/modules/offer/Offer.route';
 import { CalendarRoutes } from '../app/modules/calendar/Calendar.route';
+import { OfferpostRoutes } from '../app/modules/offerpost/Offerpost.route';
 
 const appRouter = Router();
 
@@ -60,6 +61,7 @@ export default injectRoutes(appRouter, {
   '/blogs': [BlogRoutes.free],
   '/mails': [MailRoutes.free],
   '/subscriptions': [SubscriptionRoutes.free],
+  '/offer-posts': [OfferpostRoutes],
 
   // all user can access
   '/profile': [auth.default, UserRoutes.all],
