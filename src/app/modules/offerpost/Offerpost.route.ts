@@ -4,8 +4,22 @@ import { OfferpostControllers } from './Offerpost.controller';
 import { OfferpostValidations } from './Offerpost.validation';
 import auth from '../../middlewares/auth';
 import capture from '../../middlewares/capture';
+import { QueryValidations } from '../query/Query.validation';
 
 const router = Router();
+
+router.get(
+  '/my-gigs',
+  auth.all,
+  purifyRequest(QueryValidations.list),
+  OfferpostControllers.getMyGigs,
+);
+
+router.get(
+  '/search-gigs',
+  purifyRequest(QueryValidations.list, OfferpostValidations.searchOtherGigs),
+  OfferpostControllers.searchOtherGigs,
+);
 
 router.post(
   '/gigs',

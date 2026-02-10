@@ -1,6 +1,6 @@
 import z from 'zod';
 import { TModelZod } from '../../../types/zod';
-import { OfferpostGig } from '../../../utils/db';
+import { EUserRole, OfferpostGig } from '../../../utils/db';
 import { exists } from '../../../utils/db/exists';
 
 /**
@@ -48,6 +48,14 @@ const _ = {
   gig_id: z.string('Gig ID must be a string').refine(exists('offerpostGig'), {
     error: ({ input }) => `Gig with ID "${input}" does not exist`,
   }),
+
+  role: z.enum(EUserRole),
+
+  genres: z.string().transform(s => s.split(',').map(g => g.trim())),
+
+  search_keywords: z.string().transform(s => s.split(',').map(k => k.trim())),
+
+  radius_km: z.coerce.number().min(0, 'Radius must be at least 0'),
 };
 
 export const OfferpostValidations = {
@@ -100,6 +108,19 @@ export const OfferpostValidations = {
   deleteGig: z.object({
     body: z.object({
       gig_id: _.gig_id,
+    }),
+  }),
+
+  searchOtherGigs: z.object({
+    query: z.object({
+      role: _.role.default(EUserRole.ARTIST),
+      genres: _.genres.optional(),
+      keywords: _.search_keywords.optional(),
+      location_lat: _.location_lat.optional(),
+      location_lng: _.location_lng.optional(),
+      budget_max: _.budget('Maximum').optional(),
+      budget_min: _.budget('Minimum').optional(),
+      radius_km: _.radius_km.default(50),
     }),
   }),
 };

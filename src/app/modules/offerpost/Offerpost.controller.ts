@@ -1,6 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../middlewares/catchAsync';
-import { TCreateGig, TUpdateGig } from './Offerpost.interface';
+import type {
+  TCreateGig,
+  TGetMyGigs,
+  TSearchOtherGigs,
+  TUpdateGig,
+} from './Offerpost.interface';
 import { OfferpostServices } from './Offerpost.service';
 
 export const OfferpostControllers = {
@@ -41,6 +46,29 @@ export const OfferpostControllers = {
       statusCode: StatusCodes.OK,
       message: 'Gig deleted successfully',
       data: deletedGig,
+    };
+  }),
+
+  getMyGigs: catchAsync<TGetMyGigs>(async ({ query, user }) => {
+    const { gigs, meta } = await OfferpostServices.getMyGigs({
+      ...query,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Gigs retrieved successfully',
+      meta,
+      data: gigs,
+    };
+  }),
+
+  searchOtherGigs: catchAsync<TSearchOtherGigs>(async ({ query }) => {
+    const { gigs, meta } = await OfferpostServices.searchOtherGigs(query);
+
+    return {
+      message: 'Gigs retrieved successfully',
+      meta,
+      data: gigs,
     };
   }),
 };
