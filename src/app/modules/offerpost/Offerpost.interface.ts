@@ -132,3 +132,16 @@ export type TAcceptGigRequestPayload = TAcceptGigRequest['body'] & {
 export type TCreateOfferpostPayload = {
   user_id: string;
 };
+
+export type TGetMyOfferpostsQuery = z.infer<
+  typeof OfferpostValidations.getMyOfferposts
+>['query'] &
+  TList;
+
+export type TGetMyOfferposts = {
+  query: TGetMyOfferpostsQuery;
+};
+
+export type TGetMyOfferpostsPayload = TGetMyOfferposts['query'] & {
+  user_id: string;
+};

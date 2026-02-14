@@ -12,6 +12,7 @@ import type {
   TCreateOfferpostPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
+  TGetMyOfferpostsPayload,
   TGetReceivedGigRequestsPayload,
   TGetSendGigRequestsPayload,
   TRequestGigPayload,
@@ -612,9 +613,75 @@ export const OfferpostServices = {
     const newOfferpost = await prisma.offerpost.create({
       data: {
         owner_id: user_id,
+        members: {
+          connect: {
+            id: user_id,
+          },
+        },
+        admins: {
+          connect: {
+            id: user_id,
+          },
+        },
+      },
+      include: {
+        members: true,
+        admins: true,
       },
     });
 
     return newOfferpost;
+  },
+
+  /**
+   * Get the authenticated user's offerposts, with optional filtering by status (default: PENDING). This returns all offerposts that the user is a member of, which includes both offerposts they own and offerposts they are a member of after accepting a gig request that references the offerpost.
+   */
+  async getMyOfferposts({
+    user_id,
+    limit,
+    page,
+    status,
+  }: TGetMyOfferpostsPayload) {
+    const whereOfferpost: Prisma.OfferpostWhereInput = {
+      members: {
+        some: {
+          //? We check if the user is a member of the offerpost, which includes both the owner and any additional members that may have been added (e.g. after accepting a gig request that references the offerpost)
+          id: user_id,
+        },
+      },
+    };
+
+    if (status) {
+      whereOfferpost.status = status;
+    }
+
+    const offerposts = await prisma.offerpost.findMany({
+      where: whereOfferpost,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        admins: true,
+        members: true,
+      },
+    });
+
+    const total = await prisma.offerpost.count({
+      where: whereOfferpost,
+    });
+
+    return {
+      offerposts,
+      meta: {
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        } satisfies TPagination,
+      },
+    };
   },
 };

@@ -9,6 +9,16 @@ import { QueryValidations } from '../query/Query.validation';
 const router = Router();
 
 /**
+ * Get the authenticated user's offerposts, with optional filtering by status (default: PENDING).
+ */
+router.get(
+  '/',
+  auth.all,
+  purifyRequest(QueryValidations.list, OfferpostValidations.getMyOfferposts),
+  OfferpostControllers.getMyOfferposts,
+);
+
+/**
  * Create a new offerpost gig. This endpoint is for creating gigs that the user owns. To request to join an existing gig, use the /gig-requests endpoint.
  */
 router.post('/', auth.all, OfferpostControllers.createOfferpost);

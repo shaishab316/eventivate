@@ -5,6 +5,7 @@ import type {
   TCancelGigRequest,
   TCreateGig,
   TGetMyGigs,
+  TGetMyOfferposts,
   TGetReceivedGigRequests,
   TGetSendGigRequests,
   TRequestGig,
@@ -12,6 +13,8 @@ import type {
   TUpdateGig,
 } from './Offerpost.interface';
 import { OfferpostServices } from './Offerpost.service';
+import { omit } from '../../../utils/db/omit';
+import { userOmit } from '../user/User.constant';
 
 export const OfferpostControllers = {
   createGig: catchAsync<TCreateGig>(async ({ user, body }) => {
@@ -173,7 +176,31 @@ export const OfferpostControllers = {
 
     return {
       message: 'Offerpost created successfully',
-      data,
+      data: {
+        ...data,
+        members: data.members.map(mem => omit(mem, userOmit[user.role])),
+        admins: data.admins.map(admin => omit(admin, userOmit[user.role])),
+      },
+    };
+  }),
+
+  /**
+   * Get the authenticated user's offerposts, with optional filtering by status (default: PENDING).
+   */
+  getMyOfferposts: catchAsync<TGetMyOfferposts>(async ({ query, user }) => {
+    const { offerposts, meta } = await OfferpostServices.getMyOfferposts({
+      ...query,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Offerposts retrieved successfully',
+      meta,
+      data: offerposts.map(offerpost => ({
+        ...offerpost,
+        members: offerpost.members.map(mem => omit(mem, userOmit[user.role])),
+        admins: offerpost.admins.map(admin => omit(admin, userOmit[user.role])),
+      })),
     };
   }),
 };

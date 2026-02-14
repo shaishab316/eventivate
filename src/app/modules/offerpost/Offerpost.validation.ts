@@ -2,6 +2,7 @@ import z from 'zod';
 import { TModelZod } from '../../../types/zod';
 import {
   EOfferpostGigRequestStatus,
+  EOfferpostStatus,
   EUserRole,
   OfferpostGig,
 } from '../../../utils/db';
@@ -80,6 +81,8 @@ const _ = {
     .refine(exists('offerpostGigRequest'), {
       error: ({ input }) => `Gig request with ID "${input}" does not exist`,
     }),
+
+  offerpost_status: z.enum(EOfferpostStatus),
 };
 
 export const OfferpostValidations = {
@@ -187,9 +190,21 @@ export const OfferpostValidations = {
     }),
   }),
 
+  /**
+   * Accept a gig request. This sets the OfferpostGigRequest's status to ACCEPTED. Only the gig owner can accept a gig request, and only if it's still PENDING.
+   */
   acceptGigRequest: z.object({
     body: z.object({
       gig_request_id: _.gig_request_id,
+    }),
+  }),
+
+  /**
+   * Get the authenticated user's offerposts, with optional filtering by status (default: PENDING).
+   */
+  getMyOfferposts: z.object({
+    query: z.object({
+      status: _.offerpost_status.default('PENDING'),
     }),
   }),
 };
