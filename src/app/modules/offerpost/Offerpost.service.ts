@@ -1,11 +1,16 @@
 import { StatusCodes } from 'http-status-codes';
 import ServerError from '../../../errors/ServerError';
-import { type Prisma, prisma } from '../../../utils/db';
+import {
+  type Prisma,
+  prisma,
+  EOfferpostGigRequestStatus,
+} from '../../../utils/db';
 import type {
   TCreateGigPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
   TGigWithDistance,
+  TRequestGigPayload,
   TSearchOtherGigsPayload,
   TUpdateGigPayload,
 } from './Offerpost.interface';
@@ -281,5 +286,55 @@ export const OfferpostServices = {
         } satisfies TPagination,
       },
     };
+  },
+
+  /**
+   * Request to join a gig. This creates an OfferpostGigRequest with status PENDING.
+   *
+   * If the user has already requested this gig and the request is still pending, it will throw a 400 error to prevent duplicate requests.
+   */
+  async requestGig({ user_id, ...payload }: TRequestGigPayload) {
+    //? Check if this gig request already exists and is pending
+    const existingRequest = await prisma.offerpostGigRequest.findFirst({
+      where: {
+        gig_id: payload.gig_id,
+        requester_id: user_id,
+      },
+    });
+
+    if (existingRequest?.status === EOfferpostGigRequestStatus.PENDING) {
+      throw new ServerError(
+        StatusCodes.BAD_REQUEST,
+        `You have already requested this gig and it is pending review.`,
+      );
+    }
+
+    //? If the request references another offerpost, verify that the user has permission to reference it
+    if (payload.referenced_offerpost_id) {
+      const offerpost = await prisma.offerpost.findUnique({
+        where: { id: payload.referenced_offerpost_id },
+        select: {
+          admins: {
+            select: { id: true },
+          },
+        },
+      });
+
+      if (!offerpost || !offerpost?.admins.some(({ id }) => id === user_id)) {
+        throw new ServerError(
+          StatusCodes.FORBIDDEN,
+          'You do not have permission to reference this offerpost in your gig request.',
+        );
+      }
+    }
+
+    const newRequest = await prisma.offerpostGigRequest.create({
+      data: {
+        ...payload,
+        requester_id: user_id,
+      },
+    });
+
+    return newRequest;
   },
 };

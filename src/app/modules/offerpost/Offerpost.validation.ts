@@ -56,6 +56,18 @@ const _ = {
   search_keywords: z.string().transform(s => s.split(',').map(k => k.trim())),
 
   radius_km: z.coerce.number().min(0, 'Radius must be at least 0'),
+
+  referenced_offerpost_id: z
+    .string('Referenced Offerpost ID must be a string')
+    .refine(exists('offerpostGig'), {
+      error: ({ input }) =>
+        `Referenced Offerpost with ID "${input}" does not exist`,
+    }),
+
+  message: z
+    .string('Message must be a string')
+    .trim()
+    .max(5000, 'Message must be at most 5000 characters'),
 };
 
 export const OfferpostValidations = {
@@ -121,6 +133,14 @@ export const OfferpostValidations = {
       budget_max: _.budget('Maximum').optional(),
       budget_min: _.budget('Minimum').optional(),
       radius_km: _.radius_km.default(50),
+    }),
+  }),
+
+  requestGig: z.object({
+    body: z.object({
+      gig_id: _.gig_id,
+      referenced_offerpost_id: _.referenced_offerpost_id.optional(),
+      message: _.message,
     }),
   }),
 };

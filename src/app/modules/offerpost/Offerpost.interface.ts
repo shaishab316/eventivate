@@ -65,3 +65,9 @@ export type TGigWithDistance = {
   is_active: boolean;
   distance_km?: number;
 };
+
+export type TRequestGig = z.infer<typeof OfferpostValidations.requestGig>;
+
+export type TRequestGigPayload = TRequestGig['body'] & {
+  user_id: string;
+};

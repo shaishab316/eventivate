@@ -56,4 +56,14 @@ router.delete(
   OfferpostControllers.deleteGig,
 );
 
+/**
+ * Request to join a gig. This creates an OfferpostGigRequest with status PENDING.
+ */
+router.post(
+  '/gig-request',
+  auth.all,
+  purifyRequest(OfferpostValidations.requestGig),
+  OfferpostControllers.requestGig,
+);
+
 export const OfferpostRoutes = router;

@@ -3,6 +3,7 @@ import catchAsync from '../../middlewares/catchAsync';
 import type {
   TCreateGig,
   TGetMyGigs,
+  TRequestGig,
   TSearchOtherGigs,
   TUpdateGig,
 } from './Offerpost.interface';
@@ -69,6 +70,21 @@ export const OfferpostControllers = {
       message: 'Gigs retrieved successfully',
       meta,
       data: gigs,
+    };
+  }),
+
+  /**
+   * Request to join a gig. This creates an OfferpostGigRequest with status PENDING.
+   */
+  requestGig: catchAsync<TRequestGig>(async ({ user, body }) => {
+    const data = await OfferpostServices.requestGig({
+      ...body,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Gig request sent successfully',
+      data,
     };
   }),
 };
