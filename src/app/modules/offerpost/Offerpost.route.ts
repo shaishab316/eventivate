@@ -102,4 +102,14 @@ router.post(
   OfferpostControllers.cancelGigRequest,
 );
 
+/**
+ * Accept a gig request. This sets the OfferpostGigRequest's status to ACCEPTED. Only the gig owner can accept a gig request, and only if it's still PENDING.
+ */
+router.post(
+  '/accept-gig-requests',
+  auth.all,
+  purifyRequest(OfferpostValidations.acceptGigRequest),
+  OfferpostControllers.acceptGigRequest,
+);
+
 export const OfferpostRoutes = router;

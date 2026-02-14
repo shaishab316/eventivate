@@ -541,6 +541,7 @@ export const OfferpostServices = {
           },
         },
         referenced_offerpost_id: true,
+        status: true,
       },
     });
 
@@ -556,6 +557,13 @@ export const OfferpostServices = {
       throw new ServerError(
         StatusCodes.FORBIDDEN,
         `You do not have permission to accept this gig request`,
+      );
+    }
+
+    if (request.status !== EOfferpostGigRequestStatus.PENDING) {
+      throw new ServerError(
+        StatusCodes.BAD_REQUEST,
+        `Only pending gig requests can be accepted`,
       );
     }
 

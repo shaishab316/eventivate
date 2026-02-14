@@ -148,5 +148,18 @@ export const OfferpostControllers = {
     };
   }),
 
-  acceptGigRequest: catchAsync<TAcceptGigRequest>(async () => {}),
+  /**
+   * Accept a gig request. This sets the OfferpostGigRequest's status to ACCEPTED, and may trigger additional actions like notifications or calendar invites depending on the application's requirements.
+   */
+  acceptGigRequest: catchAsync<TAcceptGigRequest>(async ({ body, user }) => {
+    const data = await OfferpostServices.acceptGigRequest({
+      ...body,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Gig request accepted successfully',
+      data,
+    };
+  }),
 };
