@@ -6,6 +6,7 @@ import {
   EOfferpostGigRequestStatus,
 } from '../../../utils/db';
 import type {
+  TAcceptGigRequestPayload,
   TCancelGigRequestPayload,
   TCreateGigPayload,
   TDeleteGigPayload,
@@ -524,5 +525,74 @@ export const OfferpostServices = {
     });
 
     return canceledRequest;
+  },
+
+  async acceptGigRequest({
+    gig_request_id,
+    user_id,
+  }: TAcceptGigRequestPayload) {
+    const request = await prisma.offerpostGigRequest.findUnique({
+      where: { id: gig_request_id },
+      select: {
+        requester_id: true,
+        gig: {
+          select: {
+            owner_id: true,
+          },
+        },
+        referenced_offerpost_id: true,
+      },
+    });
+
+    if (!request) {
+      throw new ServerError(
+        StatusCodes.NOT_FOUND,
+        `Gig request with ID "${gig_request_id}" not found`,
+      );
+    }
+
+    //? Only the gig owner can accept a gig request
+    if (request.gig.owner_id !== user_id) {
+      throw new ServerError(
+        StatusCodes.FORBIDDEN,
+        `You do not have permission to accept this gig request`,
+      );
+    }
+
+    const acceptedRequest = await prisma.offerpostGigRequest.update({
+      where: { id: gig_request_id },
+      data: {
+        status: EOfferpostGigRequestStatus.ACCEPTED,
+      },
+      include: {
+        gig: true,
+      },
+      omit: {
+        gig_id: true,
+      },
+    });
+
+    /**
+     * TODO: Additional logic can be implemented here, such as:
+     */
+
+    /**
+     * 1. Adding the requester as a member to the referenced offerpost (if referenced_offerpost_id is present in the request).
+     * This would allow the requester to have access to the offerpost and its related features (e.g. chat, updates, etc.) after their gig request is accepted.
+     */
+    if (request.referenced_offerpost_id) {
+      await prisma.offerpost.update({
+        where: { id: request.referenced_offerpost_id },
+        data: {
+          members: {
+            connect: {
+              id: user_id,
+            },
+          },
+        },
+      });
+    }
+
+    return acceptedRequest;
   },
 };

@@ -186,4 +186,10 @@ export const OfferpostValidations = {
       reject_reason: _.message.optional(),
     }),
   }),
+
+  acceptGigRequest: z.object({
+    body: z.object({
+      gig_request_id: _.gig_request_id,
+    }),
+  }),
 };

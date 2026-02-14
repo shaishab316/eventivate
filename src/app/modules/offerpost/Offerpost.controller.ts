@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../middlewares/catchAsync';
 import type {
+  TAcceptGigRequest,
   TCancelGigRequest,
   TCreateGig,
   TGetMyGigs,
@@ -146,4 +147,6 @@ export const OfferpostControllers = {
       data,
     };
   }),
+
+  acceptGigRequest: catchAsync<TAcceptGigRequest>(async () => {}),
 };

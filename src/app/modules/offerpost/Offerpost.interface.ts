@@ -117,3 +117,14 @@ export type TCancelGigRequest = z.infer<
 export type TCancelGigRequestPayload = TCancelGigRequest['body'] & {
   user_id: string;
 };
+
+/**
+ * Accept a gig request. This sets the OfferpostGigRequest's status to ACCEPTED.
+ */
+export type TAcceptGigRequest = z.infer<
+  typeof OfferpostValidations.acceptGigRequest
+>;
+
+export type TAcceptGigRequestPayload = TAcceptGigRequest['body'] & {
+  user_id: string;
+};
