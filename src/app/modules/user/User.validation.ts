@@ -92,6 +92,13 @@ export const UserValidations = {
       avatar: _.avatar.optional(),
       gender: _.gender.optional(),
       location: _.location.optional(),
+
+      /**
+       * location_lat and location_lng are included to support geolocation features,
+       * enabling functionalities like nearby searches and location-based services.
+       */
+      location_lat: _.location_lat,
+      location_lng: _.location_lng,
     } satisfies TModelZod<TUser>),
   }),
 
@@ -127,6 +134,13 @@ export const UserValidations = {
       experience: _.experience,
       location: _.location,
       price: _.price,
+
+      /**
+       * location_lat and location_lng are included to support geolocation features,
+       * enabling functionalities like nearby searches and location-based services.
+       */
+      location_lat: _.location_lat,
+      location_lng: _.location_lng,
     } satisfies TModelZod<TUser>),
   }),
 
@@ -178,6 +192,13 @@ export const UserValidations = {
       password: _.password,
       genre: _.genre,
       location: _.location,
+
+      /**
+       * location_lat and location_lng are included to support geolocation features,
+       * enabling functionalities like nearby searches and location-based services.
+       */
+      location_lat: _.location_lat,
+      location_lng: _.location_lng,
     } satisfies TModelZod<TUser>),
   }),
 
