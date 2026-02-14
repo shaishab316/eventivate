@@ -3,6 +3,7 @@ import catchAsync from '../../middlewares/catchAsync';
 import type {
   TCreateGig,
   TGetMyGigs,
+  TMyRequests,
   TRequestGig,
   TSearchOtherGigs,
   TUpdateGig,
@@ -88,6 +89,19 @@ export const OfferpostControllers = {
     return {
       message: 'Gig request sent successfully',
       data,
+    };
+  }),
+
+  myRequests: catchAsync<TMyRequests>(async ({ query, user }) => {
+    const { meta, requests } = await OfferpostServices.myRequests({
+      ...query,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Gig requests retrieved successfully',
+      meta,
+      data: requests,
     };
   }),
 };

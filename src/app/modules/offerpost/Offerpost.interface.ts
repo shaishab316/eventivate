@@ -73,3 +73,16 @@ export type TRequestGig = z.infer<typeof OfferpostValidations.requestGig>;
 export type TRequestGigPayload = TRequestGig['body'] & {
   user_id: string;
 };
+
+export type TMyRequestsQuery = z.infer<
+  typeof OfferpostValidations.myRequests
+>['query'] &
+  TList;
+
+export type TMyRequests = {
+  query: TMyRequestsQuery;
+};
+
+export type TMyRequestsPayload = TMyRequests['query'] & {
+  user_id: string;
+};

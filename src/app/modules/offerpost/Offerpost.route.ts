@@ -61,10 +61,21 @@ router.delete(
  * Request to join a gig. This creates an OfferpostGigRequest with status PENDING.
  */
 router.post(
-  '/gig-request',
+  '/gig-requests',
   auth.all,
   purifyRequest(OfferpostValidations.requestGig),
   OfferpostControllers.requestGig,
+);
+
+/**
+ * Get the authenticated user's gig requests, with optional filtering by status (default: PENDING).
+ * This returns all gig requests made by the user, regardless of the gig's owner.
+ */
+router.get(
+  '/gig-requests',
+  auth.all,
+  purifyRequest(QueryValidations.list, OfferpostValidations.myRequests),
+  OfferpostControllers.myRequests,
 );
 
 export const OfferpostRoutes = router;

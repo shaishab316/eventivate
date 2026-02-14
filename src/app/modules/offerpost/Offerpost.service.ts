@@ -9,6 +9,7 @@ import type {
   TCreateGigPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
+  TMyRequestsPayload,
   TRequestGigPayload,
   TSearchOtherGigsPayload,
   TUpdateGigPayload,
@@ -335,5 +336,52 @@ export const OfferpostServices = {
     });
 
     return newRequest;
+  },
+
+  async myRequests({ user_id, limit, page, status }: TMyRequestsPayload) {
+    const whereRequest: Prisma.OfferpostGigRequestWhereInput = {
+      requester_id: user_id,
+      status,
+    };
+
+    const requests = await prisma.offerpostGigRequest.findMany({
+      where: whereRequest,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        gig: {
+          include: {
+            owner: {
+              select: {
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+      omit: {
+        gig_id: true,
+      },
+    });
+
+    const total = await prisma.offerpostGigRequest.count({
+      where: whereRequest,
+    });
+
+    return {
+      requests,
+      meta: {
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        } satisfies TPagination,
+      },
+    };
   },
 };

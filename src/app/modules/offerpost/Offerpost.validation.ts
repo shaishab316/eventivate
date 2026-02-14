@@ -1,6 +1,10 @@
 import z from 'zod';
 import { TModelZod } from '../../../types/zod';
-import { EUserRole, OfferpostGig } from '../../../utils/db';
+import {
+  EOfferpostGigRequestStatus,
+  EUserRole,
+  OfferpostGig,
+} from '../../../utils/db';
 import { exists } from '../../../utils/db/exists';
 
 /**
@@ -141,6 +145,14 @@ export const OfferpostValidations = {
       gig_id: _.gig_id,
       referenced_offerpost_id: _.referenced_offerpost_id.optional(),
       message: _.message,
+    }),
+  }),
+
+  myRequests: z.object({
+    query: z.object({
+      status: z
+        .enum(EOfferpostGigRequestStatus)
+        .default(EOfferpostGigRequestStatus.PENDING),
     }),
   }),
 };
