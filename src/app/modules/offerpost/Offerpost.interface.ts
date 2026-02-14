@@ -39,7 +39,9 @@ export type TSearchOtherGigs = {
   query: TSearchOtherGigsQuery;
 };
 
-export type TSearchOtherGigsPayload = TSearchOtherGigs['query'];
+export type TSearchOtherGigsPayload = TSearchOtherGigs['query'] & {
+  user_id: string;
+};
 
 export type TGigWithDistance = {
   id: string;

@@ -17,6 +17,7 @@ router.get(
 
 router.get(
   '/search-gigs',
+  auth.all,
   purifyRequest(QueryValidations.list, OfferpostValidations.searchOtherGigs),
   OfferpostControllers.searchOtherGigs,
 );

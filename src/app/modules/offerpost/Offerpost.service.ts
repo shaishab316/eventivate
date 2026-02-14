@@ -9,7 +9,6 @@ import type {
   TCreateGigPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
-  TGigWithDistance,
   TRequestGigPayload,
   TSearchOtherGigsPayload,
   TUpdateGigPayload,
@@ -131,141 +130,140 @@ export const OfferpostServices = {
     budget_max,
     budget_min,
     radius_km = 50,
+    user_id,
   }: TSearchOtherGigsPayload) {
     const offset = (page - 1) * limit;
 
-    // Build WHERE conditions
     const conditions: string[] = [];
     const params: any[] = [];
     let paramIndex = 1;
 
-    // Role filter (if provided)
     if (role) {
-      conditions.push(`owner_role = $${paramIndex}`);
+      conditions.push(`og.owner_role = $${paramIndex}`);
       params.push(role);
       paramIndex++;
     }
 
-    // Search condition
     if (search) {
       const searchConditions = offerpostSearchableFields
-        .map(field => `LOWER(${field}) LIKE $${paramIndex}`)
+        .map(field => `LOWER(og.${field}) LIKE $${paramIndex}`)
         .join(' OR ');
       conditions.push(`(${searchConditions})`);
       params.push(`%${search.toLowerCase()}%`);
       paramIndex++;
     }
 
-    // Genre filter
     if (genres && genres.length > 0) {
-      conditions.push(`genre = ANY($${paramIndex})`);
+      conditions.push(`og.genre = ANY($${paramIndex})`);
       params.push(genres);
       paramIndex++;
     }
 
-    // Keywords filter
     if (keywords && keywords.length > 0) {
-      conditions.push(`keywords && $${paramIndex}`);
+      conditions.push(`og.keywords && $${paramIndex}`);
       params.push(keywords);
       paramIndex++;
     }
 
-    // Budget filters
     if (budget_min !== undefined && budget_min !== null) {
-      conditions.push(`budget_max >= $${paramIndex}`);
+      conditions.push(`og.budget_max >= $${paramIndex}`);
       params.push(budget_min);
       paramIndex++;
     }
 
     if (budget_max !== undefined && budget_max !== null) {
-      conditions.push(`budget_min <= $${paramIndex}`);
+      conditions.push(`og.budget_min <= $${paramIndex}`);
       params.push(budget_max);
       paramIndex++;
     }
 
-    // Location-based search using PostGIS
     let distanceSelect = '';
     let distanceWhere = '';
-    let orderBy = 'created_at DESC';
+    let orderBy = 'og.created_at DESC';
 
     if (location_lat !== undefined && location_lng !== undefined) {
       const radiusInMeters = radius_km * 1000;
+      distanceSelect = `, ROUND(
+      CAST(
+        ST_Distance(
+          og.location_point,
+          ST_SetSRID(ST_MakePoint($${paramIndex}, $${paramIndex + 1}), 4326)::geography
+        ) / 1000 AS numeric
+      ), 2
+    ) as distance_km`;
 
-      distanceSelect = `, 
-      ROUND(
-        CAST(
-          ST_Distance(
-            location_point,
-            ST_SetSRID(ST_MakePoint($${paramIndex}, $${paramIndex + 1}), 4326)::geography
-          ) / 1000 AS numeric
-        ), 2
-      ) as distance_km`;
-
-      distanceWhere = `
-      AND location_point IS NOT NULL
+      distanceWhere = ` AND og.location_point IS NOT NULL
       AND ST_DWithin(
-        location_point,
+        og.location_point,
         ST_SetSRID(ST_MakePoint($${paramIndex}, $${paramIndex + 1}), 4326)::geography,
         $${paramIndex + 2}
       )`;
 
       params.push(location_lng, location_lat, radiusInMeters);
       paramIndex += 3;
-
-      orderBy = 'distance_km ASC, created_at DESC';
+      orderBy = 'distance_km ASC, og.created_at DESC';
     }
 
-    // Build WHERE clause (handle empty conditions)
+    const isRequestedSelect = user_id
+      ? `, EXISTS (
+        SELECT 1 FROM offerpost_gig_requests ogr
+        WHERE ogr.gig_id = og.id
+          AND ogr.requester_id = $${paramIndex}
+      ) as is_requested`
+      : `, FALSE as is_requested`;
+
+    if (user_id) {
+      params.push(user_id);
+      paramIndex++;
+    }
+
     const whereClause =
       conditions.length > 0 ? conditions.join(' AND ') : '1=1';
 
-    // Main query to get gigs
     const gigsQuery = `
-    SELECT 
-      id,
-      created_at,
-      updated_at,
-      owner_id,
-      owner_role,
-      genre,
-      title,
-      description,
-      banner_url,
-      keywords,
-      location,
-      location_lat,
-      location_lng,
-      budget_min,
-      budget_max,
-      target_for_agents,
-      target_for_artists,
-      target_for_venues,
-      target_for_organizers,
-      target_for_managers,
-      is_active
+    SELECT
+      og.id,
+      og.created_at,
+      og.updated_at,
+      og.owner_id,
+      og.owner_role,
+      og.genre,
+      og.title,
+      og.description,
+      og.banner_url,
+      og.keywords,
+      og.location,
+      og.location_lat,
+      og.location_lng,
+      og.budget_min,
+      og.budget_max,
+      og.target_for_agents,
+      og.target_for_artists,
+      og.target_for_venues,
+      og.target_for_organizers,
+      og.target_for_managers,
+      og.is_active
       ${distanceSelect}
-    FROM offerpost_gigs
+      ${isRequestedSelect}
+    FROM offerpost_gigs og
     WHERE ${whereClause}
     ${distanceWhere}
     ORDER BY ${orderBy}
-    LIMIT $${paramIndex}
-    OFFSET $${paramIndex + 1}
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
-
     params.push(limit, offset);
 
-    // Count query
     const countQuery = `
     SELECT COUNT(*) as total
-    FROM offerpost_gigs
+    FROM offerpost_gigs og
     WHERE ${whereClause}
     ${distanceWhere}
   `;
 
-    const countParams = params.slice(0, -2); // Remove limit and offset
+    const countParams = params.slice(0, -(user_id ? 3 : 2)); // Remove limit, offset (+ user_id already pushed before)
 
     const [gigs, countResult] = await Promise.all([
-      prisma.$queryRawUnsafe<TGigWithDistance[]>(gigsQuery, ...params),
+      prisma.$queryRawUnsafe<any[]>(gigsQuery, ...params),
       prisma.$queryRawUnsafe<[{ total: bigint }]>(countQuery, ...countParams),
     ]);
 
@@ -275,7 +273,8 @@ export const OfferpostServices = {
       gigs: gigs.map(gig => ({
         ...gig,
         keywords: gig.keywords || [],
-        distance_km: gig.distance_km || undefined,
+        distance_km: gig.distance_km ?? undefined,
+        is_requested: gig.is_requested ?? false,
       })),
       meta: {
         pagination: {

@@ -63,8 +63,11 @@ export const OfferpostControllers = {
     };
   }),
 
-  searchOtherGigs: catchAsync<TSearchOtherGigs>(async ({ query }) => {
-    const { gigs, meta } = await OfferpostServices.searchOtherGigs(query);
+  searchOtherGigs: catchAsync<TSearchOtherGigs>(async ({ query, user }) => {
+    const { gigs, meta } = await OfferpostServices.searchOtherGigs({
+      ...query,
+      user_id: user.id,
+    });
 
     return {
       message: 'Gigs retrieved successfully',
