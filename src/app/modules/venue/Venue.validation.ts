@@ -21,6 +21,12 @@ const _ = {
     .number('Location longitude is required')
     .min(-180, 'Location longitude must be at least -180')
     .max(180, 'Location longitude must be at most 180'),
+
+  venue_types: z
+    .string()
+    .trim()
+    .transform(str => str.split(',').map(t => t.trim()))
+    .optional(),
 };
 
 /**
@@ -84,11 +90,7 @@ export const VenueValidations = {
    */
   searchVenues: z.object({
     query: z.object({
-      venue_types: z
-        .string()
-        .trim()
-        .transform(({ split }) => split(','))
-        .optional(),
+      venue_types: _.venue_types,
       min_capacity: z.coerce.number().optional(),
       max_capacity: z.coerce.number().optional(),
       location_lat: _.location_lat.optional(),

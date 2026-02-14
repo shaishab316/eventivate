@@ -14,6 +14,12 @@ const _ = {
     .number('Location longitude is required')
     .min(-180, 'Location longitude must be at least -180')
     .max(180, 'Location longitude must be at most 180'),
+
+  genres: z
+    .string()
+    .trim()
+    .transform(str => str.split(',').map(g => g.trim()))
+    .optional(),
 };
 
 /**
@@ -61,11 +67,7 @@ export const ArtistValidations = {
    */
   searchArtists: z.object({
     query: z.object({
-      genres: z
-        .string()
-        .trim()
-        .transform(({ split }) => split(','))
-        .optional(),
+      genres: _.genres,
       location_lat: _.location_lat.optional(),
       location_lng: _.location_lng.optional(),
       start_date: z.iso.datetime().optional(),
