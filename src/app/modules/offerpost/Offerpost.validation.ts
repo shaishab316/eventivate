@@ -72,6 +72,14 @@ const _ = {
     .string('Message must be a string')
     .trim()
     .max(5000, 'Message must be at most 5000 characters'),
+
+  gig_request_status: z.enum(EOfferpostGigRequestStatus),
+
+  gig_request_id: z
+    .string('Gig request ID must be a string')
+    .refine(exists('offerpostGigRequest'), {
+      error: ({ input }) => `Gig request with ID "${input}" does not exist`,
+    }),
 };
 
 export const OfferpostValidations = {
@@ -156,9 +164,7 @@ export const OfferpostValidations = {
    */
   getSendGigRequests: z.object({
     query: z.object({
-      status: z
-        .enum(EOfferpostGigRequestStatus)
-        .default(EOfferpostGigRequestStatus.PENDING),
+      status: _.gig_request_status.default('PENDING'),
     }),
   }),
 
@@ -167,9 +173,17 @@ export const OfferpostValidations = {
    */
   getReceivedGigRequests: z.object({
     query: z.object({
-      status: z
-        .enum(EOfferpostGigRequestStatus)
-        .default(EOfferpostGigRequestStatus.PENDING),
+      status: _.gig_request_status.default('PENDING'),
+    }),
+  }),
+
+  /**
+   * Reject or accept a gig request. Only the owner of the gig can perform this action.
+   */
+  cancelGigRequest: z.object({
+    body: z.object({
+      gig_request_id: _.gig_request_id,
+      reject_reason: _.message.optional(),
     }),
   }),
 };

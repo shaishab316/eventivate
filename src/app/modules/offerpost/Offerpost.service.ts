@@ -6,6 +6,7 @@ import {
   EOfferpostGigRequestStatus,
 } from '../../../utils/db';
 import type {
+  TCancelGigRequestPayload,
   TCreateGigPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
@@ -471,5 +472,57 @@ export const OfferpostServices = {
         } satisfies TPagination,
       },
     };
+  },
+
+  /**
+   * Cancel a gig request. This can be done by either the requester or the gig owner. It sets the request status to REJECTED.
+   */
+  async cancelGigRequest({
+    user_id,
+    gig_request_id,
+    reject_reason,
+  }: TCancelGigRequestPayload) {
+    const request = await prisma.offerpostGigRequest.findUnique({
+      where: { id: gig_request_id },
+      select: {
+        requester_id: true,
+        gig: {
+          select: {
+            owner_id: true,
+          },
+        },
+      },
+    });
+
+    if (!request) {
+      throw new ServerError(
+        StatusCodes.NOT_FOUND,
+        `Gig request with ID "${gig_request_id}" not found`,
+      );
+    }
+
+    //? Only the requester or the gig owner can cancel a gig request
+    if (request.requester_id !== user_id && request.gig.owner_id !== user_id) {
+      throw new ServerError(
+        StatusCodes.FORBIDDEN,
+        `You do not have permission to cancel this gig request`,
+      );
+    }
+
+    const canceledRequest = await prisma.offerpostGigRequest.update({
+      where: { id: gig_request_id },
+      data: {
+        status: EOfferpostGigRequestStatus.REJECTED,
+        reject_reason,
+      },
+      include: {
+        gig: true,
+      },
+      omit: {
+        gig_id: true,
+      },
+    });
+
+    return canceledRequest;
   },
 };

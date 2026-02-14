@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../middlewares/catchAsync';
 import type {
+  TCancelGigRequest,
   TCreateGig,
   TGetMyGigs,
   TGetReceivedGigRequests,
@@ -130,4 +131,19 @@ export const OfferpostControllers = {
       };
     },
   ),
+
+  /**
+   * Cancel a gig request. This sets the OfferpostGigRequest's status to CANCELED.
+   */
+  cancelGigRequest: catchAsync<TCancelGigRequest>(async ({ body, user }) => {
+    const data = await OfferpostServices.cancelGigRequest({
+      ...body,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Gig request canceled successfully',
+      data,
+    };
+  }),
 };

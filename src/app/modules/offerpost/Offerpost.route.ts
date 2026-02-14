@@ -92,4 +92,14 @@ router.get(
   OfferpostControllers.getReceivedGigRequests,
 );
 
+/**
+ * Cancel a gig request. This sets the OfferpostGigRequest's status to CANCELLED. Only the requester can cancel their gig request, and only if it's still PENDING.
+ */
+router.post(
+  '/cancel-gig-requests',
+  auth.all,
+  purifyRequest(OfferpostValidations.cancelGigRequest),
+  OfferpostControllers.cancelGigRequest,
+);
+
 export const OfferpostRoutes = router;

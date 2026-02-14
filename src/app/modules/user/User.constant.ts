@@ -22,6 +22,7 @@ export const userDefaultOmit = {
   is_verified: true,
   is_active: true,
   is_admin: true,
+  is_super_admin: true,
   updated_at: true,
   created_at: true,
   balance: true,

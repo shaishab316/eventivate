@@ -14,6 +14,8 @@ model OfferpostGigRequest {
 
   message String?
 
+  reject_reason String? //? Only applicable if status is REJECTED
+
   status EOfferpostGigRequestStatus @default(PENDING)
 
   @@index([gig_id])

@@ -106,3 +106,14 @@ export type TGetReceivedGigRequestsPayload =
   TGetReceivedGigRequests['query'] & {
     user_id: string;
   };
+
+/**
+ * Cancel a gig request. This sets the OfferpostGigRequest's status to CANCELED.
+ */
+export type TCancelGigRequest = z.infer<
+  typeof OfferpostValidations.cancelGigRequest
+>;
+
+export type TCancelGigRequestPayload = TCancelGigRequest['body'] & {
+  user_id: string;
+};
