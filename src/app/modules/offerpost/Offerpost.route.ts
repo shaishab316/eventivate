@@ -72,10 +72,10 @@ router.post(
  * This returns all gig requests made by the user, regardless of the gig's owner.
  */
 router.get(
-  '/gig-requests',
+  '/send-gig-requests',
   auth.all,
-  purifyRequest(QueryValidations.list, OfferpostValidations.myRequests),
-  OfferpostControllers.myRequests,
+  purifyRequest(QueryValidations.list, OfferpostValidations.getSendGigRequests),
+  OfferpostControllers.getSendGigRequests,
 );
 
 export const OfferpostRoutes = router;

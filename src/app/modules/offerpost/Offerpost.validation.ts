@@ -148,7 +148,7 @@ export const OfferpostValidations = {
     }),
   }),
 
-  myRequests: z.object({
+  getSendGigRequests: z.object({
     query: z.object({
       status: z
         .enum(EOfferpostGigRequestStatus)

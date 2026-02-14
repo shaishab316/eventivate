@@ -74,15 +74,15 @@ export type TRequestGigPayload = TRequestGig['body'] & {
   user_id: string;
 };
 
-export type TMyRequestsQuery = z.infer<
-  typeof OfferpostValidations.myRequests
+export type TGetSendGigRequestsQuery = z.infer<
+  typeof OfferpostValidations.getSendGigRequests
 >['query'] &
   TList;
 
-export type TMyRequests = {
-  query: TMyRequestsQuery;
+export type TGetSendGigRequests = {
+  query: TGetSendGigRequestsQuery;
 };
 
-export type TMyRequestsPayload = TMyRequests['query'] & {
+export type TGetSendGigRequestsPayload = TGetSendGigRequests['query'] & {
   user_id: string;
 };

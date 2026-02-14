@@ -9,7 +9,7 @@ import type {
   TCreateGigPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
-  TMyRequestsPayload,
+  TGetSendGigRequestsPayload,
   TRequestGigPayload,
   TSearchOtherGigsPayload,
   TUpdateGigPayload,
@@ -338,7 +338,12 @@ export const OfferpostServices = {
     return newRequest;
   },
 
-  async myRequests({ user_id, limit, page, status }: TMyRequestsPayload) {
+  async getSendGigRequests({
+    user_id,
+    limit,
+    page,
+    status,
+  }: TGetSendGigRequestsPayload) {
     const whereRequest: Prisma.OfferpostGigRequestWhereInput = {
       requester_id: user_id,
       status,
