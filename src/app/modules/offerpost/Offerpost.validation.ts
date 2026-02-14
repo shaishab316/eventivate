@@ -140,6 +140,9 @@ export const OfferpostValidations = {
     }),
   }),
 
+  /**
+   * Request to join a gig. This creates an OfferpostGigRequest with status PENDING.
+   */
   requestGig: z.object({
     body: z.object({
       gig_id: _.gig_id,
@@ -148,7 +151,21 @@ export const OfferpostValidations = {
     }),
   }),
 
+  /**
+   * Get the authenticated user's gig requests, with optional filtering by status (default: PENDING).
+   */
   getSendGigRequests: z.object({
+    query: z.object({
+      status: z
+        .enum(EOfferpostGigRequestStatus)
+        .default(EOfferpostGigRequestStatus.PENDING),
+    }),
+  }),
+
+  /**
+   * Get the authenticated user's received gig requests, with optional filtering by status (default: PENDING).
+   */
+  getReceivedGigRequests: z.object({
     query: z.object({
       status: z
         .enum(EOfferpostGigRequestStatus)

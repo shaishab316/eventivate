@@ -78,4 +78,18 @@ router.get(
   OfferpostControllers.getSendGigRequests,
 );
 
+/**
+ * Get gig requests received for the authenticated user's gigs, with optional filtering by status (default: PENDING).
+ * This returns all gig requests for gigs owned by the user, regardless of who made the request.
+ */
+router.get(
+  '/received-gig-requests',
+  auth.all,
+  purifyRequest(
+    QueryValidations.list,
+    OfferpostValidations.getReceivedGigRequests,
+  ),
+  OfferpostControllers.getReceivedGigRequests,
+);
+
 export const OfferpostRoutes = router;

@@ -74,6 +74,9 @@ export type TRequestGigPayload = TRequestGig['body'] & {
   user_id: string;
 };
 
+/**
+ * Get the authenticated user's gig requests, with optional filtering by status (default: PENDING).
+ */
 export type TGetSendGigRequestsQuery = z.infer<
   typeof OfferpostValidations.getSendGigRequests
 >['query'] &
@@ -86,3 +89,20 @@ export type TGetSendGigRequests = {
 export type TGetSendGigRequestsPayload = TGetSendGigRequests['query'] & {
   user_id: string;
 };
+
+/**
+ * Get the authenticated user's received gig requests, with optional filtering by status (default: PENDING).
+ */
+export type TGetReceivedGigRequestsQuery = z.infer<
+  typeof OfferpostValidations.getReceivedGigRequests
+>['query'] &
+  TList;
+
+export type TGetReceivedGigRequests = {
+  query: TGetReceivedGigRequestsQuery;
+};
+
+export type TGetReceivedGigRequestsPayload =
+  TGetReceivedGigRequests['query'] & {
+    user_id: string;
+  };

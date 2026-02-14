@@ -9,13 +9,16 @@ import type {
   TCreateGigPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
+  TGetReceivedGigRequestsPayload,
   TGetSendGigRequestsPayload,
   TRequestGigPayload,
   TSearchOtherGigsPayload,
   TUpdateGigPayload,
 } from './Offerpost.interface';
-import { offerpostSearchableFields } from './Offerpost.constant';
+import { offerpostGigSearchableFields } from './Offerpost.constant';
 import type { TPagination } from '../../../utils/server/serveResponse';
+import { omit } from '../../../utils/db/omit';
+import { userOmit } from '../user/User.constant';
 
 export const OfferpostServices = {
   async createGig(payload: TCreateGigPayload) {
@@ -85,7 +88,7 @@ export const OfferpostServices = {
     };
 
     if (search) {
-      whereGig.OR = offerpostSearchableFields.map(field => ({
+      whereGig.OR = offerpostGigSearchableFields.map(field => ({
         [field]: {
           contains: search,
           mode: 'insensitive',
@@ -146,7 +149,7 @@ export const OfferpostServices = {
     }
 
     if (search) {
-      const searchConditions = offerpostSearchableFields
+      const searchConditions = offerpostGigSearchableFields
         .map(field => `LOWER(og.${field}) LIKE $${paramIndex}`)
         .join(' OR ');
       conditions.push(`(${searchConditions})`);
@@ -338,16 +341,31 @@ export const OfferpostServices = {
     return newRequest;
   },
 
+  /**
+   * Get the authenticated user's gig requests, with optional filtering by status (default: PENDING).
+   */
   async getSendGigRequests({
     user_id,
     limit,
     page,
     status,
+    search,
   }: TGetSendGigRequestsPayload) {
     const whereRequest: Prisma.OfferpostGigRequestWhereInput = {
       requester_id: user_id,
       status,
     };
+
+    if (search) {
+      whereRequest.gig = {
+        OR: offerpostGigSearchableFields.map(field => ({
+          [field]: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        })),
+      };
+    }
 
     const requests = await prisma.offerpostGigRequest.findMany({
       where: whereRequest,
@@ -379,6 +397,71 @@ export const OfferpostServices = {
 
     return {
       requests,
+      meta: {
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        } satisfies TPagination,
+      },
+    };
+  },
+
+  /**
+   * Get the authenticated user's received gig requests, with optional filtering by status (default: PENDING).
+   */
+  async getReceivedGigRequests({
+    user_id,
+    limit,
+    page,
+    status,
+    search,
+  }: TGetReceivedGigRequestsPayload) {
+    const whereRequest: Prisma.OfferpostGigRequestWhereInput = {
+      gig: {
+        owner_id: user_id,
+      },
+    };
+
+    if (status) {
+      whereRequest.status = status;
+    }
+
+    if (search) {
+      whereRequest.gig!.OR = offerpostGigSearchableFields.map(field => ({
+        [field]: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      }));
+    }
+
+    const requests = await prisma.offerpostGigRequest.findMany({
+      where: whereRequest,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        gig: true,
+        requester: true,
+      },
+      omit: {
+        gig_id: true,
+      },
+    });
+
+    const total = await prisma.offerpostGigRequest.count({
+      where: whereRequest,
+    });
+
+    return {
+      requests: requests.map(({ requester, ...req }) => ({
+        ...req,
+        requester: omit(requester, userOmit[requester?.role ?? 'USER']),
+      })),
       meta: {
         pagination: {
           page,

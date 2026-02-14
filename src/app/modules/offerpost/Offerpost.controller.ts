@@ -3,6 +3,7 @@ import catchAsync from '../../middlewares/catchAsync';
 import type {
   TCreateGig,
   TGetMyGigs,
+  TGetReceivedGigRequests,
   TGetSendGigRequests,
   TRequestGig,
   TSearchOtherGigs,
@@ -92,12 +93,35 @@ export const OfferpostControllers = {
     };
   }),
 
+  /**
+   * Get the authenticated user's gig requests, with optional filtering by status (default: PENDING).
+   */
   getSendGigRequests: catchAsync<TGetSendGigRequests>(
     async ({ query, user }) => {
       const { meta, requests } = await OfferpostServices.getSendGigRequests({
         ...query,
         user_id: user.id,
       });
+
+      return {
+        message: 'Gig requests retrieved successfully',
+        meta,
+        data: requests,
+      };
+    },
+  ),
+
+  /**
+   * Get the authenticated user's received gig requests, with optional filtering by status (default: PENDING).
+   */
+  getReceivedGigRequests: catchAsync<TGetReceivedGigRequests>(
+    async ({ query, user }) => {
+      const { meta, requests } = await OfferpostServices.getReceivedGigRequests(
+        {
+          ...query,
+          user_id: user.id,
+        },
+      );
 
       return {
         message: 'Gig requests retrieved successfully',
