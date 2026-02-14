@@ -8,6 +8,11 @@ import { QueryValidations } from '../query/Query.validation';
 
 const router = Router();
 
+/**
+ * Create a new offerpost gig. This endpoint is for creating gigs that the user owns. To request to join an existing gig, use the /gig-requests endpoint.
+ */
+router.post('/', auth.all, OfferpostControllers.createOfferpost);
+
 router.get(
   '/my-gigs',
   auth.all,

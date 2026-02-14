@@ -9,6 +9,7 @@ import type {
   TAcceptGigRequestPayload,
   TCancelGigRequestPayload,
   TCreateGigPayload,
+  TCreateOfferpostPayload,
   TDeleteGigPayload,
   TGetMyGigsPayload,
   TGetReceivedGigRequestsPayload,
@@ -602,5 +603,18 @@ export const OfferpostServices = {
     }
 
     return acceptedRequest;
+  },
+
+  /**
+   * Create a new offerpost. This is a separate endpoint from creating a gig, as an offerpost can exist without any gigs, and gigs can be added to the offerpost later. This allows for more flexibility in how users create and manage their offerposts and gigs.
+   */
+  async createOfferpost({ user_id }: TCreateOfferpostPayload) {
+    const newOfferpost = await prisma.offerpost.create({
+      data: {
+        owner_id: user_id,
+      },
+    });
+
+    return newOfferpost;
   },
 };

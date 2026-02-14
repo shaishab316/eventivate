@@ -162,4 +162,18 @@ export const OfferpostControllers = {
       data,
     };
   }),
+
+  /**
+   * Create an offerpost for the authenticated user. This initializes a new offerpost with default values, which the user can then edit to add gigs and details.
+   */
+  createOfferpost: catchAsync(async ({ user }) => {
+    const data = await OfferpostServices.createOfferpost({
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Offerpost created successfully',
+      data,
+    };
+  }),
 };

@@ -128,3 +128,7 @@ export type TAcceptGigRequest = z.infer<
 export type TAcceptGigRequestPayload = TAcceptGigRequest['body'] & {
   user_id: string;
 };
+
+export type TCreateOfferpostPayload = {
+  user_id: string;
+};
