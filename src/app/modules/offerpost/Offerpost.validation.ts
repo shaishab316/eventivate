@@ -83,6 +83,12 @@ const _ = {
     }),
 
   offerpost_status: z.enum(EOfferpostStatus),
+
+  offerpost_id: z
+    .string('Offerpost ID must be a string')
+    .refine(exists('offerpost'), {
+      error: ({ input }) => `Offerpost with ID "${input}" does not exist`,
+    }),
 };
 
 export const OfferpostValidations = {
@@ -205,6 +211,15 @@ export const OfferpostValidations = {
   getMyOfferposts: z.object({
     query: z.object({
       status: _.offerpost_status.default('PENDING'),
+    }),
+  }),
+
+  /**
+   * Leave (delete) an offerpost. Only the owner of the offerpost can perform this action.
+   */
+  leaveFromOfferpost: z.object({
+    body: z.object({
+      offerpost_id: _.offerpost_id,
     }),
   }),
 };

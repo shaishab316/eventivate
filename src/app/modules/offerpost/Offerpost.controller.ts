@@ -8,6 +8,7 @@ import type {
   TGetMyOfferposts,
   TGetReceivedGigRequests,
   TGetSendGigRequests,
+  TLeaveFromOfferpost,
   TRequestGig,
   TSearchOtherGigs,
   TUpdateGig,
@@ -203,4 +204,21 @@ export const OfferpostControllers = {
       })),
     };
   }),
+
+  /**
+   * Leave an offerpost. This removes the user from the offerpost's members, and if they are an admin, also from the admins. If the user is the last member, the offerpost may be deleted or set to an inactive state depending on business rules.
+   */
+  leaveFromOfferpost: catchAsync<TLeaveFromOfferpost>(
+    async ({ body, user }) => {
+      const data = await OfferpostServices.leaveFromOfferpost({
+        ...body,
+        user_id: user.id,
+      });
+
+      return {
+        message: 'Left offerpost successfully',
+        data,
+      };
+    },
+  ),
 };

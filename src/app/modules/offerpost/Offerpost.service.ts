@@ -15,6 +15,7 @@ import type {
   TGetMyOfferpostsPayload,
   TGetReceivedGigRequestsPayload,
   TGetSendGigRequestsPayload,
+  TLeaveFromOfferpostPayload,
   TRequestGigPayload,
   TSearchOtherGigsPayload,
   TUpdateGigPayload,
@@ -683,5 +684,75 @@ export const OfferpostServices = {
         } satisfies TPagination,
       },
     };
+  },
+
+  /**
+   * Leave (delete) an offerpost. Only the owner of the offerpost can perform this action. If the user is the only member left in the offerpost or is the owner, deleting the offerpost entirely would make more sense than leaving it empty, so we delete the offerpost in this case. If there are other members in the offerpost, we simply remove the user from the members list (and admins list if they are an admin) to allow the offerpost to continue existing for the remaining members.
+   */
+  async leaveFromOfferpost({
+    user_id,
+    offerpost_id,
+  }: TLeaveFromOfferpostPayload) {
+    const offerpost = await prisma.offerpost.findUnique({
+      where: { id: offerpost_id },
+      select: {
+        members: {
+          select: { id: true },
+        },
+        admins: {
+          select: { id: true },
+        },
+        owner_id: true,
+      },
+    });
+
+    if (!offerpost) {
+      throw new ServerError(
+        StatusCodes.NOT_FOUND,
+        `Offerpost with ID "${offerpost_id}" not found`,
+      );
+    }
+
+    if (!offerpost?.members.some(({ id }) => id === user_id)) {
+      throw new ServerError(
+        StatusCodes.FORBIDDEN,
+        `You are not a member of this offerpost`,
+      );
+    }
+
+    if (offerpost.members.length === 1 || offerpost.owner_id === user_id) {
+      //? If the user is the only member left in the offerpost or is the owner, deleting the offerpost entirely would make more sense than leaving it empty, so we delete the offerpost in this case
+      await prisma.offerpost.delete({
+        where: { id: offerpost_id },
+      });
+    }
+
+    const updatedPayload: Prisma.OfferpostUpdateInput = {
+      members: {
+        disconnect: {
+          id: user_id,
+        },
+      },
+    };
+
+    //? If the user leaving is an admin, we also remove them from the admins list. This is to prevent a scenario where an offerpost has no admins but still has members, which could lead to issues with managing the offerpost.
+    if (offerpost.admins.some(({ id }) => id === user_id)) {
+      updatedPayload.admins = {
+        disconnect: {
+          id: user_id,
+        },
+      };
+    }
+
+    const updatedOfferpost = await prisma.offerpost.update({
+      where: { id: offerpost_id },
+      data: updatedPayload,
+      include: {
+        members: true,
+        admins: true,
+      },
+    });
+
+    return updatedOfferpost;
   },
 };

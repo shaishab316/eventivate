@@ -145,3 +145,14 @@ export type TGetMyOfferposts = {
 export type TGetMyOfferpostsPayload = TGetMyOfferposts['query'] & {
   user_id: string;
 };
+
+/**
+ * Leave (delete) an offerpost. Only the owner of the offerpost can perform this action.
+ */
+export type TLeaveFromOfferpost = z.infer<
+  typeof OfferpostValidations.leaveFromOfferpost
+>;
+
+export type TLeaveFromOfferpostPayload = TLeaveFromOfferpost['body'] & {
+  user_id: string;
+};

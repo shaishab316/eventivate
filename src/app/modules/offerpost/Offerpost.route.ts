@@ -23,6 +23,16 @@ router.get(
  */
 router.post('/', auth.all, OfferpostControllers.createOfferpost);
 
+/**
+ * Leave (delete) an offerpost. Only the owner of the offerpost can perform this action. If the user is the only member left in the offerpost or is the owner, deleting the offerpost entirely would make more sense than leaving it empty, so we delete the offerpost in this case. If there are other members in the offerpost, we simply remove the user from the members list (and admins list if they are an admin) to allow the offerpost to continue existing for the remaining members.
+ */
+router.post(
+  '/leave',
+  auth.all,
+  purifyRequest(OfferpostValidations.leaveFromOfferpost),
+  OfferpostControllers.leaveFromOfferpost,
+);
+
 router.get(
   '/my-gigs',
   auth.all,
