@@ -330,18 +330,28 @@ export const VenueServices = {
     }
 
     // Capacity filter
-    if (min_capacity !== undefined || max_capacity !== undefined) {
-      if (min_capacity !== undefined && max_capacity !== undefined) {
-        conditions.push(
-          `capacity BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
-        );
-        params.push(min_capacity, max_capacity);
-        paramIndex += 2;
-      } else if (min_capacity !== undefined) {
+    if (
+      (min_capacity && min_capacity > 0) ||
+      (max_capacity && max_capacity > 0)
+    ) {
+      if (
+        min_capacity &&
+        min_capacity > 0 &&
+        max_capacity &&
+        max_capacity > 0
+      ) {
+        if (min_capacity <= max_capacity) {
+          conditions.push(
+            `capacity BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+          );
+          params.push(min_capacity, max_capacity);
+          paramIndex += 2;
+        }
+      } else if (min_capacity && min_capacity > 0) {
         conditions.push(`capacity >= $${paramIndex}`);
         params.push(min_capacity);
         paramIndex++;
-      } else if (max_capacity !== undefined) {
+      } else if (max_capacity && max_capacity > 0) {
         conditions.push(`capacity <= $${paramIndex}`);
         params.push(max_capacity);
         paramIndex++;
