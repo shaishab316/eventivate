@@ -84,9 +84,6 @@ const config = {
         regex: '^postgresql://.*',
       },
     ),
-    redis: env('redis url', `redis://localhost:6379`, {
-      regex: '^redis://.*',
-    }),
     ui: env('ui url', `http://localhost:${port}`, {
       regex: '^https?:\\/\\/.*$|^$',
     }),
