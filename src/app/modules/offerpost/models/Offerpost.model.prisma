@@ -1,0 +1,30 @@
+model Offerpost {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  owner_id String?
+  owner    User?   @relation("UserOfferposts", fields: [owner_id], references: [id], onDelete: SetNull)
+
+  members User[] @relation("OfferpostMembers")
+  admins  User[] @relation("OfferpostAdmins")
+
+  status EOfferpostStatus @default(PENDING)
+
+  attachment_url String?
+  offerpost_msgs OfferpostMsg[]
+
+  connected_gigs         OfferpostGig[]        @relation("GigOfferposts")
+  offerpost_gig_requests OfferpostGigRequest[]
+
+  @@index([owner_id])
+  @@index([status])
+  @@map("offerposts")
+}
+
+enum EOfferpostStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  CANCELLED
+}

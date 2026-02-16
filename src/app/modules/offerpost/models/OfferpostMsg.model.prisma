@@ -1,0 +1,27 @@
+model OfferpostMsg {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  offerpost_id String
+  offerpost    Offerpost @relation(fields: [offerpost_id], references: [id], onDelete: Cascade)
+
+  sender_id String?
+  sender    User?   @relation(fields: [sender_id], references: [id], onDelete: SetNull)
+
+  content         String                       @default("")
+  attachment_url  String?
+  attachment_type EOfferpostMsgAttachmentType?
+
+  @@index([offerpost_id])
+  @@index([sender_id])
+  @@index([created_at])
+  @@map("offerpost_msgs")
+}
+
+enum EOfferpostMsgAttachmentType {
+  IMAGE
+  VIDEO
+  PDF
+  OTHER
+}
