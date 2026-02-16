@@ -350,7 +350,7 @@ export const VenueServices = {
         AND avail_date <= $${paramIndex + 1}::timestamp
       )
     `);
-      params.push(new Date(start_date), new Date(end_date));
+      params.push(start_date, end_date);
       paramIndex += 2;
     }
 

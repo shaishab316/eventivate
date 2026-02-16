@@ -20,6 +20,12 @@ const _ = {
     .trim()
     .transform(str => str.split(',').map(g => g.trim()))
     .optional(),
+
+  filter_date: z.iso.datetime().transform(str => {
+    const date = new Date(str);
+    date.setUTCHours(0, 0, 0, 0);
+    return date;
+  }),
 };
 
 /**
@@ -70,8 +76,8 @@ export const ArtistValidations = {
       genres: _.genres,
       location_lat: _.location_lat.optional(),
       location_lng: _.location_lng.optional(),
-      start_date: z.iso.datetime().optional(),
-      end_date: z.iso.datetime().optional(),
+      start_date: _.filter_date.optional(),
+      end_date: _.filter_date.optional(),
     }),
   }),
 };
