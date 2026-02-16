@@ -317,9 +317,16 @@ export const VenueServices = {
 
     // Venue types filter
     if (venue_types?.length) {
-      conditions.push(`venue_type = ANY($${paramIndex})`);
-      params.push(venue_types);
-      paramIndex++;
+      const venueTypeConditions = venue_types
+        .map((_, idx) => `LOWER(venue_type) LIKE LOWER($${paramIndex + idx})`)
+        .join(' OR ');
+
+      conditions.push(`(${venueTypeConditions})`);
+
+      venue_types.forEach(type => {
+        params.push(`%${type}%`);
+        paramIndex++;
+      });
     }
 
     // Capacity filter

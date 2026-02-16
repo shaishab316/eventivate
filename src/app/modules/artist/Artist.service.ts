@@ -391,9 +391,16 @@ export const ArtistServices = {
     }
 
     if (genres?.length) {
-      conditions.push(`genre = ANY($${paramIndex})`);
-      params.push(genres);
-      paramIndex++;
+      const genreConditions = genres
+        .map((_, idx) => `LOWER(genre) LIKE LOWER($${paramIndex + idx})`)
+        .join(' OR ');
+
+      conditions.push(`(${genreConditions})`);
+
+      genres.forEach(g => {
+        params.push(`%${g}%`);
+        paramIndex++;
+      });
     }
 
     if (start_date && end_date) {
