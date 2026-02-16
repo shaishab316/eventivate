@@ -29,11 +29,11 @@ model OfferpostGig {
   target_for_organizers Boolean @default(false)
   target_for_managers   Boolean @default(false)
 
-  is_active                    Boolean                    @default(true)
-  offerpost_gig_availabilities OfferpostGigAvailability[]
+  is_active      Boolean                    @default(true)
+  availabilities OfferpostGigAvailability[]
 
-  offerposts             Offerpost[]           @relation("GigOfferposts")
-  offerpost_gig_requests OfferpostGigRequest[]
+  offerposts Offerpost[]           @relation("GigOfferposts")
+  requests   OfferpostGigRequest[]
 
   @@index([owner_id])
   @@index([owner_role])

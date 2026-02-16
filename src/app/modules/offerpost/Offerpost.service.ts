@@ -11,6 +11,7 @@ import type {
   TCreateGigPayload,
   TCreateOfferpostPayload,
   TDeleteGigPayload,
+  TGetGigDetailsPayload,
   TGetMyGigsPayload,
   TGetMyOfferpostsPayload,
   TGetReceivedGigRequestsPayload,
@@ -804,5 +805,27 @@ export const OfferpostServices = {
     });
 
     return updatedOfferpost;
+  },
+
+  /**
+   * Get gig details by gig ID. This returns the gig details along with its owner and availabilities. This is used to display the gig details page, where users can see the gig information and request to join the gig if they are interested.
+   */
+  async getGigDetails({ gig_id }: TGetGigDetailsPayload) {
+    const gig = await prisma.offerpostGig.findUnique({
+      where: { id: gig_id },
+      include: {
+        owner: true,
+        availabilities: true,
+      },
+    });
+
+    if (!gig) {
+      throw new ServerError(
+        StatusCodes.NOT_FOUND,
+        `Gig with ID "${gig_id}" not found`,
+      );
+    }
+
+    return gig;
   },
 };

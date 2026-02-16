@@ -57,11 +57,24 @@ router.get(
   OfferpostControllers.getMyGigs,
 );
 
+/**
+ * Search for gigs to join. This searches all gigs that the user does not own, with optional filtering by status (default: PENDING) and text search on the gig's title, description, genre, and location.
+ */
 router.get(
   '/search-gigs',
   auth.all,
   purifyRequest(QueryValidations.list, OfferpostValidations.searchOtherGigs),
   OfferpostControllers.searchOtherGigs,
+);
+
+/**
+ * Get details of a specific gig, including its offerpost and members. This is used when viewing a gig's details, either from the search results or from the user's own gigs. The user must be a member of the offerpost to view the gig details, unless the gig is still PENDING, in which case anyone can view the details to allow them to decide whether to request to join.
+ */
+router.get(
+  '/gig-details',
+  auth.all,
+  purifyRequest(OfferpostValidations.getGigDetails),
+  OfferpostControllers.getGigDetails,
 );
 
 router.post(

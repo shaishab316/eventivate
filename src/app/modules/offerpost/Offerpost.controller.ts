@@ -4,6 +4,7 @@ import type {
   TAcceptGigRequest,
   TCancelGigRequest,
   TCreateGig,
+  TGetGigDetails,
   TGetMyGigs,
   TGetMyOfferposts,
   TGetReceivedGigRequests,
@@ -235,6 +236,25 @@ export const OfferpostControllers = {
     return {
       message: 'Offerpost updated successfully',
       data,
+    };
+  }),
+
+  /**
+   * Get details of a gig, including all its offerposts and gig requests. Only the gig owner and gig requesters can perform this action.
+   */
+  getGigDetails: catchAsync<TGetGigDetails>(async ({ query, user }) => {
+    const { owner, ...gig } = await OfferpostServices.getGigDetails({
+      ...query,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Gig details retrieved successfully',
+      data: {
+        ...gig,
+        owner: omit(owner, userOmit[owner.role]),
+        is_mine: gig.owner_id === user.id,
+      },
     };
   }),
 };

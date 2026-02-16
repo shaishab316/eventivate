@@ -167,3 +167,12 @@ export type TUpdateOfferpost = z.infer<
 export type TUpdateOfferpostPayload = TUpdateOfferpost['body'] & {
   user_id: string;
 };
+
+/**
+ * Get details of a gig, including all its offerposts and gig requests. Only the gig owner and gig requesters can perform this action.
+ */
+export type TGetGigDetails = z.infer<typeof OfferpostValidations.getGigDetails>;
+
+export type TGetGigDetailsPayload = TGetGigDetails['query'] & {
+  user_id: string;
+};

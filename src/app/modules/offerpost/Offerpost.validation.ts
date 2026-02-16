@@ -239,4 +239,13 @@ export const OfferpostValidations = {
        */
     } satisfies TModelZod<TOfferpost, 'offerpost_id'>),
   }),
+
+  /**
+   * Get details of a gig, including all its offerposts and gig requests. Only the gig owner and gig requesters can perform this action.
+   */
+  getGigDetails: z.object({
+    query: z.object({
+      gig_id: _.gig_id,
+    }),
+  }),
 };
