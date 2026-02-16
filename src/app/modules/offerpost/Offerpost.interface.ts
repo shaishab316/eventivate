@@ -156,3 +156,14 @@ export type TLeaveFromOfferpost = z.infer<
 export type TLeaveFromOfferpostPayload = TLeaveFromOfferpost['body'] & {
   user_id: string;
 };
+
+/**
+ * Update an offerpost. Only the owner of the offerpost can perform this action.
+ */
+export type TUpdateOfferpost = z.infer<
+  typeof OfferpostValidations.updateOfferpost
+>;
+
+export type TUpdateOfferpostPayload = TUpdateOfferpost['body'] & {
+  user_id: string;
+};

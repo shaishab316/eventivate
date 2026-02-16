@@ -12,6 +12,7 @@ import type {
   TRequestGig,
   TSearchOtherGigs,
   TUpdateGig,
+  TUpdateOfferpost,
 } from './Offerpost.interface';
 import { OfferpostServices } from './Offerpost.service';
 import { omit } from '../../../utils/db/omit';
@@ -221,4 +222,19 @@ export const OfferpostControllers = {
       };
     },
   ),
+
+  /**
+   * updata an offerpost. Only the owner of the offerpost can perform this action. This allows updating certain fields of the offerpost, such as its status or attachment_url. More fields can be added as needed.
+   */
+  updateOfferpost: catchAsync<TUpdateOfferpost>(async ({ body, user }) => {
+    const data = await OfferpostServices.updateOfferpost({
+      ...body,
+      user_id: user.id,
+    });
+
+    return {
+      message: 'Offerpost updated successfully',
+      data,
+    };
+  }),
 };

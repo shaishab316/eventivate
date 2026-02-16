@@ -24,10 +24,27 @@ router.get(
 router.post('/', auth.all, OfferpostControllers.createOfferpost);
 
 /**
+ * Update an offerpost. Only the owner of the offerpost can perform this action.
+ */
+router.patch(
+  '/',
+  auth.all,
+  capture({
+    attachment_url: {
+      fileType: 'any',
+      size: 100 * 1024 * 1024, // 100MB
+      maxCount: 1,
+    },
+  }),
+  purifyRequest(OfferpostValidations.updateOfferpost),
+  OfferpostControllers.updateOfferpost,
+);
+
+/**
  * Leave (delete) an offerpost. Only the owner of the offerpost can perform this action. If the user is the only member left in the offerpost or is the owner, deleting the offerpost entirely would make more sense than leaving it empty, so we delete the offerpost in this case. If there are other members in the offerpost, we simply remove the user from the members list (and admins list if they are an admin) to allow the offerpost to continue existing for the remaining members.
  */
-router.post(
-  '/leave',
+router.delete(
+  '/',
   auth.all,
   purifyRequest(OfferpostValidations.leaveFromOfferpost),
   OfferpostControllers.leaveFromOfferpost,

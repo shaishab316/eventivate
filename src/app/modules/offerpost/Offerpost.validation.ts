@@ -4,7 +4,8 @@ import {
   EOfferpostGigRequestStatus,
   EOfferpostStatus,
   EUserRole,
-  OfferpostGig,
+  OfferpostGig as TOfferpostGig,
+  Offerpost as TOfferpost,
 } from '../../../utils/db';
 import { exists } from '../../../utils/db/exists';
 
@@ -111,7 +112,7 @@ export const OfferpostValidations = {
       target_for_organizers: _.boolean.optional(),
       target_for_venues: _.boolean.optional(),
       is_active: _.boolean.optional(),
-    } satisfies TModelZod<OfferpostGig>),
+    } satisfies TModelZod<TOfferpostGig>),
   }),
 
   updateGig: z.object({
@@ -135,7 +136,7 @@ export const OfferpostValidations = {
       target_for_organizers: _.boolean.optional(),
       target_for_venues: _.boolean.optional(),
       is_active: _.boolean.optional(),
-    } satisfies Partial<TModelZod<OfferpostGig, 'gig_id'>>),
+    } satisfies Partial<TModelZod<TOfferpostGig, 'gig_id'>>),
   }),
 
   deleteGig: z.object({
@@ -221,5 +222,21 @@ export const OfferpostValidations = {
     body: z.object({
       offerpost_id: _.offerpost_id,
     }),
+  }),
+
+  /**
+   * Update an offerpost. Only the owner of the offerpost can perform this action.
+   */
+  updateOfferpost: z.object({
+    body: z.object({
+      offerpost_id: _.offerpost_id,
+
+      status: _.offerpost_status.optional(),
+      attachment_url: z.string().optional(),
+
+      /**
+       * Todo: add more fields
+       */
+    } satisfies TModelZod<TOfferpost, 'offerpost_id'>),
   }),
 };

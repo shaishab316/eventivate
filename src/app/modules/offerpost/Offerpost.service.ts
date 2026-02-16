@@ -19,6 +19,7 @@ import type {
   TRequestGigPayload,
   TSearchOtherGigsPayload,
   TUpdateGigPayload,
+  TUpdateOfferpostPayload,
 } from './Offerpost.interface';
 import { offerpostGigSearchableFields } from './Offerpost.constant';
 import type { TPagination } from '../../../utils/server/serveResponse';
@@ -722,9 +723,15 @@ export const OfferpostServices = {
 
     if (offerpost.members.length === 1 || offerpost.owner_id === user_id) {
       //? If the user is the only member left in the offerpost or is the owner, deleting the offerpost entirely would make more sense than leaving it empty, so we delete the offerpost in this case
-      await prisma.offerpost.delete({
+      const deletedOfferpost = await prisma.offerpost.delete({
         where: { id: offerpost_id },
+        include: {
+          members: true,
+          admins: true,
+        },
       });
+
+      return deletedOfferpost;
     }
 
     const updatedPayload: Prisma.OfferpostUpdateInput = {
@@ -747,6 +754,49 @@ export const OfferpostServices = {
     const updatedOfferpost = await prisma.offerpost.update({
       where: { id: offerpost_id },
       data: updatedPayload,
+      include: {
+        members: true,
+        admins: true,
+      },
+    });
+
+    return updatedOfferpost;
+  },
+
+  /**
+   * Update an offerpost. Only the owner of the offerpost can perform this action. This allows the owner to update the offerpost's details, such as its status, attachment_url, etc. Additional fields can be added to the update payload as needed.
+   */
+  async updateOfferpost({
+    user_id,
+    offerpost_id,
+    ...payload
+  }: TUpdateOfferpostPayload) {
+    const offerpost = await prisma.offerpost.findUnique({
+      where: { id: offerpost_id },
+      include: {
+        admins: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!offerpost) {
+      throw new ServerError(
+        StatusCodes.NOT_FOUND,
+        `Offerpost with ID "${offerpost_id}" not found`,
+      );
+    }
+
+    if (!offerpost.admins.some(({ id }) => id === user_id)) {
+      throw new ServerError(
+        StatusCodes.FORBIDDEN,
+        `You do not have permission to update this offerpost`,
+      );
+    }
+
+    const updatedOfferpost = await prisma.offerpost.update({
+      where: { id: offerpost_id },
+      data: payload,
       include: {
         members: true,
         admins: true,
