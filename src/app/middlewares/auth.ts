@@ -134,7 +134,7 @@ Object.values(EUserRole).forEach(role => {
             );
           }
         },
-        paymentValidator,
+        // paymentValidator,
       ],
     }),
     enumerable: true,

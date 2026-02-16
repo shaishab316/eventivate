@@ -22,6 +22,7 @@ import { MailRoutes } from '../app/modules/mail/Mail.route';
 import { OfferRoutes } from '../app/modules/offer/Offer.route';
 import { CalendarRoutes } from '../app/modules/calendar/Calendar.route';
 import { OfferpostRoutes } from '../app/modules/offerpost/Offerpost.route';
+import { ContextPageRoutes } from '../app/modules/contextPage/ContextPage.route';
 
 const appRouter = Router();
 
@@ -51,6 +52,8 @@ appRouter.post(
 
 export default injectRoutes(appRouter, {
   // no auth required
+
+  '/context-pages': [ContextPageRoutes.user],
   '/auth': [AuthRoutes.free],
   '/events': [EventRoutes.free],
   '/artists': [ArtistRoutes.free],
