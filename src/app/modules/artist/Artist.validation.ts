@@ -18,7 +18,12 @@ const _ = {
   genres: z
     .string()
     .trim()
-    .transform(str => str.split(',').map(g => g.trim()))
+    .transform(str =>
+      str
+        .split(',')
+        .map(g => g.trim())
+        .filter(Boolean),
+    )
     .optional(),
 
   filter_date: z.iso.datetime().transform(str => {

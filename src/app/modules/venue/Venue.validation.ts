@@ -25,7 +25,12 @@ const _ = {
   venue_types: z
     .string()
     .trim()
-    .transform(str => str.split(',').map(t => t.trim()))
+    .transform(str =>
+      str
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean),
+    )
     .optional(),
 
   filter_date: z.iso.datetime().transform(str => {
