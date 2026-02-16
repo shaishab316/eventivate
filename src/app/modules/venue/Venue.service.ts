@@ -426,7 +426,13 @@ export const VenueServices = {
         } satisfies TPagination,
         total_venue_types: Array.from(
           new Set(
-            totalVenueTypes.map(({ venue_type }) => venue_type?.toLowerCase()),
+            totalVenueTypes.flatMap(
+              ({ venue_type }) =>
+                venue_type
+                  ?.toLowerCase()
+                  .split(',')
+                  .map(v => v.trim()) || [],
+            ),
           ),
         ).filter(Boolean),
       },

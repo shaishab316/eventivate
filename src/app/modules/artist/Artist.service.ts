@@ -478,8 +478,16 @@ export const ArtistServices = {
           totalPages: Math.ceil(total / limit),
         } satisfies TPagination,
         total_genres: Array.from(
-          new Set(totalGenres.map(({ genre }) => genre?.toLowerCase())),
-        ),
+          new Set(
+            totalGenres.flatMap(
+              ({ genre }) =>
+                genre
+                  ?.toLowerCase()
+                  .split(',')
+                  .map(g => g.trim()) || [],
+            ),
+          ),
+        ).filter(Boolean),
       },
       artists: artists?.map(artist => omit(artist, userOmit.ARTIST)),
     };
