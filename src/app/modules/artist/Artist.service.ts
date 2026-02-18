@@ -372,6 +372,7 @@ export const ArtistServices = {
     location_lng,
     start_date,
     end_date,
+    radius, //? in km
   }: TSearchArtistsPayload) {
     const conditions: string[] = [
       `role = '${EUserRole.ARTIST}'`,
@@ -416,7 +417,7 @@ export const ArtistServices = {
     }
 
     if (location_lat !== undefined && location_lng !== undefined) {
-      const RADIUS_KM = 50;
+      const RADIUS_KM = radius;
       const LAT_DEGREE_PER_KM = 1 / 111;
       const LNG_DEGREE_PER_KM =
         1 / (111 * Math.cos(location_lat * (Math.PI / 180)));

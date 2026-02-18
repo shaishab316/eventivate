@@ -296,6 +296,7 @@ export const VenueServices = {
     max_capacity,
     start_date,
     end_date,
+    radius, //? in km
   }: TSearchVenuesPayload) {
     const conditions: string[] = [
       `role = '${EUserRole.VENUE}'`,
@@ -373,7 +374,7 @@ export const VenueServices = {
 
     // Location filter (within ~50km radius)
     if (location_lat !== undefined && location_lng !== undefined) {
-      const RADIUS_KM = 50;
+      const RADIUS_KM = radius;
       const LAT_DEGREE_PER_KM = 1 / 111;
       const LNG_DEGREE_PER_KM =
         1 / (111 * Math.cos(location_lat * (Math.PI / 180)));

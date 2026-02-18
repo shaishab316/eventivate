@@ -38,6 +38,8 @@ const _ = {
     date.setUTCHours(0, 0, 0, 0);
     return date;
   }),
+
+  radius: z.coerce.number().min(0, 'Radius must be at least 0 km'),
 };
 
 /**
@@ -108,6 +110,7 @@ export const VenueValidations = {
       location_lng: _.location_lng.optional(),
       start_date: _.filter_date.optional(),
       end_date: _.filter_date.optional(),
+      radius: _.radius.default(50), //? default radius for search venues is 50 km
     }),
   }),
 };
