@@ -5,7 +5,7 @@
  */
 
 model User {
-  user_id    String   @id // u-{sl} (public ID)
+  user_id    String   @id @db.Text // u-{sl} (public ID)
   user_sl    Int      @unique @default(autoincrement()) // internal sequence
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -24,6 +24,7 @@ model User {
 
   profile Profile?
 
+  @@index([email, user_sl, user_id, role])
   @@map("users")
 }
 

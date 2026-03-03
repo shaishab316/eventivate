@@ -7,7 +7,6 @@
 
 model Profile {
   profile_id String @id // p-{sl}
-  profile_sl Int    @unique @default(autoincrement())
 
   user_id    String   @unique
   created_at DateTime @default(now())
@@ -35,7 +34,6 @@ enum ProfileType {
 
 model ArtistProfile {
   artist_profile_id String @id // ap-{sl}
-  artist_profile_sl Int    @unique @default(autoincrement())
 
   profile_id String   @unique
   created_at DateTime @default(now())
