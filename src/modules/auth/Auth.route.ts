@@ -41,4 +41,22 @@ router.post(
   AuthControllers.forgotPassword,
 );
 
+/**
+ * Route for verifying the OTP for password reset and generating a reset token
+ */
+router.post(
+  "/reset-password-otp-verify",
+  purifyRequest(AuthValidations.resetPasswordOtpVerifySchema),
+  AuthControllers.resetPasswordOtpVerify,
+);
+
+/**
+ * Route for resetting the user's password using the reset token and new password
+ */
+router.post(
+  "/reset-password",
+  purifyRequest(AuthValidations.resetPasswordSchema),
+  AuthControllers.resetPassword,
+);
+
 export const AuthRoutes = router;

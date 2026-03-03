@@ -3,6 +3,7 @@ import {
   CForgotPassword,
   CLoginUser,
   CRegisterUser,
+  CResetPasswordOtpVerify,
   CVerifyEmail,
 } from "./Auth.interface";
 import { UserServices } from "../user/User.service";
@@ -57,6 +58,32 @@ const forgotPassword = catchAsync<CForgotPassword>(async ({ body }) => {
 });
 
 /**
+ * Controller for verifying the OTP provided by the user for password reset. It checks if the provided email exists, generates the expected OTP using the user's unique OTP salt, and compares it with the provided OTP. If the OTP is valid, it generates a reset token that can be used to authenticate subsequent password reset requests. The response includes a message indicating that the OTP was verified successfully and returns the reset token. If the email does not exist or the OTP is invalid/expired, it throws an error indicating that the OTP verification failed.
+ */
+const resetPasswordOtpVerify = catchAsync<CResetPasswordOtpVerify>(
+  async ({ body: payload }) => {
+    const data = await AuthServices.resetPasswordOtpVerify(payload);
+
+    return {
+      message: "OTP verified successfully",
+      data,
+    };
+  },
+);
+
+/**
+ * Controller for resetting the user's password. It accepts a reset token and a new password, validates the reset token to ensure it is valid and of the correct type, and then updates the user's password in the database with the new hashed password. If the token is invalid or expired, it throws an error indicating that the password reset failed. Upon successful password reset, it returns a message confirming that the password has been reset successfully.
+ */
+const resetPassword = catchAsync(async ({ body: payload }) => {
+  await AuthServices.resetPassword(payload);
+
+  return {
+    message:
+      "Password reset successfully. You can now log in with your new password.",
+  };
+});
+
+/**
  * Export all Auth controllers
  */
 export const AuthControllers = {
@@ -64,4 +91,6 @@ export const AuthControllers = {
   verifyEmail,
   loginUser,
   forgotPassword,
+  resetPasswordOtpVerify,
+  resetPassword,
 };

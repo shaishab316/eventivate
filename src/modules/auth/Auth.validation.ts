@@ -43,9 +43,25 @@ const forgotPasswordSchema = z.object({
   }),
 });
 
+const resetPasswordOtpVerifySchema = z.object({
+  body: z.object({
+    email: validator.email,
+    otp: validator.otp,
+  }),
+});
+
+const resetPasswordSchema = z.object({
+  body: z.object({
+    token: validator.token,
+    password: validator.password,
+  }),
+});
+
 export const AuthValidations = {
   registerUserSchema,
   verifyEmailSchema,
   loginUserSchema,
   forgotPasswordSchema,
+  resetPasswordOtpVerifySchema,
+  resetPasswordSchema,
 };

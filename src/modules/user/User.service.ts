@@ -68,6 +68,19 @@ const createUser: SCreateUser = async (payload) => {
   return createdUser;
 };
 
+/**
+ * Service to update a user's password. This is used in the password reset flow after verifying the OTP and reset token. The function takes the user's ID and the new password, hashes the new password, and updates the user's record in the database with the new hashed password. This ensures that the user's password is securely stored and that they can log in with their new password after resetting it.
+ */
+const updateUserPassword = async (user_id: string, newPassword: string) => {
+  const hashedPassword = await hashPassword(newPassword);
+
+  await prisma.user.update({
+    where: { user_id },
+    data: { password: hashedPassword },
+  });
+};
+
 export const UserServices = {
   createUser,
+  updateUserPassword,
 };

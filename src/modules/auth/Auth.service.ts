@@ -1,10 +1,13 @@
 import { prisma } from "@/db";
 import type {
   IRegisterJWTPayload,
+  IResetPasswordJWTPayload,
   SForgotPassword,
   SForgotPasswordPayload,
   SLoginUser,
   SRegisterUser,
+  SResetPassword,
+  SResetPasswordOtpVerify,
   SSendPasswordResetEmail,
   SSendVerificationEmail,
   SVerifyEmail,
@@ -106,6 +109,7 @@ const sendVerificationEmail: SSendVerificationEmail = async ({
 const sendPasswordResetEmail: SSendPasswordResetEmail = async ({
   email,
   otp_salt,
+  token,
 }) => {
   const otp = await generateOtp({
     secret: config.otp_key + otp_salt,
@@ -120,7 +124,7 @@ const sendPasswordResetEmail: SSendPasswordResetEmail = async ({
       <p>Hello,</p>
       <p>We received a request to reset your password for your Getavails account.</p>
       <p>Your password reset OTP is: <strong>${otp}</strong></p>
-      <p>${config.server_url}/api/v1/auth/reset-password?email=${email}&otp=${otp}</p>
+      <p>${config.server_url}/api/v1/auth/reset-password?token=${token}</p>
       <p>This OTP is valid for 15 minutes. If you did not request a password reset, please ignore this email.</p>
     `,
   })
@@ -283,12 +287,21 @@ const forgotPassword: SForgotPassword = async ({ email }) => {
     };
   }
 
+  const reset_token = signToken(
+    {
+      type: "reset_password",
+      user_id: user.user_id,
+    } satisfies IResetPasswordJWTPayload,
+    "15m",
+  );
+
   /**
    * Send password reset email with OTP. The OTP is generated using a secret that combines a server-side key and the user's unique OTP salt, ensuring that it is unique and can be validated later when the user attempts to reset their password. The email is sent asynchronously, and any errors during the sending process are logged without affecting the user experience. The function returns an expiration time for the OTP, which is typically set to 15 minutes from the time of generation.
    */
   await sendPasswordResetEmail({
     email,
     otp_salt: user.otp_salt,
+    token: reset_token,
   });
 
   return {
@@ -296,9 +309,75 @@ const forgotPassword: SForgotPassword = async ({ email }) => {
   };
 };
 
+/**
+ * Verifies the OTP provided by the user for password reset and, if valid, generates a reset token that can be used to authenticate the password reset request. The function checks if the user exists based on the provided email, generates the expected OTP using the user's unique OTP salt, and compares it with the provided OTP. If the OTP is valid, it creates a JWT reset token containing the user's ID and a type identifier, which can be used in subsequent requests to reset the password. If the email does not exist or the OTP is invalid/expired, it throws a ServerError with an UNAUTHORIZED status.
+ */
+const resetPasswordOtpVerify: SResetPasswordOtpVerify = async ({
+  email,
+  otp,
+}) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    throw new ServerError(statusCodes.UNAUTHORIZED, "Invalid email or OTP");
+  }
+
+  const expectedOtp = await generateOtp({
+    secret: config.otp_key + user.otp_salt,
+    digits: 6,
+    period: 15 * 60, //? 15 minutes validity
+  });
+
+  if (otp !== expectedOtp) {
+    throw new ServerError(statusCodes.UNAUTHORIZED, "Invalid or expired OTP");
+  }
+
+  const reset_token = signToken(
+    {
+      type: "reset_password",
+      user_id: user.user_id,
+    } satisfies IResetPasswordJWTPayload,
+    "15m",
+  );
+
+  return {
+    reset_token,
+  };
+};
+
+/**
+ * Resets the user's password by validating the provided reset token and new password. The function verifies the reset token to ensure it is valid and of the correct type, then updates the user's password in the database with the new hashed password. If the token is invalid or expired, it throws a ServerError with an UNAUTHORIZED status. Upon successful password reset, the user can log in with their new password.
+ */
+const resetPassword: SResetPassword = async ({ token, password }) => {
+  try {
+    const { type: tokenType, user_id } = verifyToken(
+      token,
+    ) as IResetPasswordJWTPayload;
+
+    if (tokenType !== "reset_password") {
+      throw new ServerError(statusCodes.UNAUTHORIZED, "Invalid token type");
+    }
+
+    await UserServices.updateUserPassword(user_id, password);
+  } catch (error) {
+    logger.error("Password reset failed: %o", {
+      error,
+      token,
+    });
+
+    throw error;
+  }
+};
+
 export const AuthServices = {
   registerUser,
   verifyEmail,
   loginUser,
   forgotPassword,
+  resetPasswordOtpVerify,
+  resetPassword,
 };
