@@ -3,6 +3,7 @@ import type { SCreateUser } from "./User.interface";
 import { ServerError } from "@/errors";
 import { statusCodes } from "@/lib/status_codes";
 import { userOmit } from "./User.constant";
+import { generateOtpSalt, hashPassword } from "@/utils/crypto";
 
 /**
  * Service to create a new user
@@ -12,6 +13,13 @@ import { userOmit } from "./User.constant";
  * - Therefore we DO NOT write `user_id` in application code
  */
 const createUser: SCreateUser = async (payload) => {
+  /**
+   * Step 0: Hash password if provided
+   */
+  if (payload.password) {
+    payload.password = await hashPassword(payload.password);
+  }
+
   const existingWhere: Prisma.UserWhereInput = { OR: [] };
 
   if (payload.email) {
@@ -52,6 +60,7 @@ const createUser: SCreateUser = async (payload) => {
       ...payload,
 
       user_id: Math.random().toString(36).substring(2, 10),
+      otp_salt: generateOtpSalt(),
     },
     omit: userOmit,
   });

@@ -87,3 +87,10 @@ export async function verifyPassword(
 ): Promise<boolean> {
   return await argon2.verify(hash, password);
 }
+
+/**
+ * Generate a random OTP salt for a user
+ */
+export function generateOtpSalt(): string {
+  return Math.random().toString(36).substring(2, 10); // Generate a random 8-character string
+}
