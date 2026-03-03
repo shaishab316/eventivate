@@ -33,14 +33,14 @@ export function hashEmail(email: string): string {
 }
 
 /**
- * Two-way encrypt — used for storing + recovering original email
+ * Two-way encrypt — used for storing + recovering original payload
  */
-export function encryptEmail(email: string): string {
+export function encryptPayload(payload: string): string {
   const iv = randomBytes(CIPHER.IV_BYTES);
   const cipher = createCipheriv(CIPHER.ALGORITHM, CIPHER.KEY, iv);
 
   const encrypted = Buffer.concat([
-    cipher.update(email, "utf8"),
+    cipher.update(payload, "utf8"),
     cipher.final(),
   ]);
 
@@ -54,10 +54,10 @@ export function encryptEmail(email: string): string {
 }
 
 /**
- * Decrypt an encrypted email string
+ * Decrypt an encrypted payload string
  */
-export function decryptEmail(encryptedEmail: string): string {
-  const [ivHex, tagHex, dataHex] = encryptedEmail.split(CIPHER.SEPARATOR);
+export function decryptPayload(encryptedPayload: string): string {
+  const [ivHex, tagHex, dataHex] = encryptedPayload.split(CIPHER.SEPARATOR);
 
   const iv = Buffer.from(ivHex, "hex");
   const tag = Buffer.from(tagHex, "hex");

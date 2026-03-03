@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import type { AuthValidations } from "./Auth.validation";
+import type { MSafeUser } from "../user/User.interface";
 
 /**********************************/
 /****** Validation interface ******/
@@ -12,9 +13,23 @@ export type SRegisterUser = (payload: SRegisterUserPayload) => Promise<{
   expires_in: string;
 }>;
 
+export type CVerifyEmail = z.infer<typeof AuthValidations.verifyEmailSchema>;
+export type SVerifyEmailPayload = CVerifyEmail["query"];
+export type SVerifyEmail = (payload: SVerifyEmailPayload) => Promise<{
+  user: MSafeUser;
+  tokens: {
+    access_token: string;
+    refresh_token: string;
+  };
+}>;
+
 /**********************************/
 /******* Service interface ********/
 /**********************************/
+export type IRegisterJWTPayload = {
+  type: "register";
+  encrypted_body: string; // Encrypted string containing the registration payload (email, password, etc.)
+};
 
 export type SSendVerificationEmailPayload = {
   email: string;

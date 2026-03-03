@@ -7,7 +7,9 @@ import { Server as HttpServer } from "node:http";
 let server: HttpServer;
 
 async function main() {
-  await prisma.$connect();
+  await prisma.$connect().then((data) => {
+    logger.info("Connected to database", data);
+  });
 
   server = app.listen(config.port, () => {
     logger.info(`API running on http://localhost:${config.port}`);

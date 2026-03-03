@@ -14,4 +14,7 @@ export default {
   },
   server_url: String(process.env.SERVER_URL),
   otp_key: String(process.env.OTP_KEY),
+
+  access_token_expiry: String(process.env.ACCESS_TOKEN_EXPIRY) as any,
+  refresh_token_expiry: String(process.env.REFRESH_TOKEN_EXPIRY) as any,
 };
