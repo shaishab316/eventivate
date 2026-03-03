@@ -33,12 +33,25 @@ export type SLoginUser = (payload: SLoginUserPayload) => Promise<{
   };
 }>;
 
+export type CForgotPassword = z.infer<
+  typeof AuthValidations.forgotPasswordSchema
+>;
+export type SForgotPasswordPayload = CForgotPassword["body"];
+export type SForgotPassword = (payload: SForgotPasswordPayload) => Promise<{
+  expire_at: string; // ISO string indicating when the OTP expires
+}>;
+
 /**********************************/
 /******* Service interface ********/
 /**********************************/
 export type IRegisterJWTPayload = {
   type: "register";
   encrypted_body: string; // Encrypted string containing the registration payload (email, password, etc.)
+};
+
+export type IResetPasswordJWTPayload = {
+  type: "reset_password";
+  encrypted_body: string; // Encrypted string containing the password reset payload (email, otp_salt, etc.)
 };
 
 export type SSendVerificationEmailPayload = {
@@ -48,4 +61,13 @@ export type SSendVerificationEmailPayload = {
 
 export type SSendVerificationEmail = (
   payload: SSendVerificationEmailPayload,
+) => Promise<void>;
+
+export type SSendPasswordResetEmailPayload = {
+  email: string;
+  otp_salt: string;
+};
+
+export type SSendPasswordResetEmail = (
+  payload: SSendPasswordResetEmailPayload,
 ) => Promise<void>;

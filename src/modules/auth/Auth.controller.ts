@@ -1,5 +1,10 @@
 import catchAsync from "@/middlewares/catchAsync";
-import { CLoginUser, CRegisterUser, CVerifyEmail } from "./Auth.interface";
+import {
+  CForgotPassword,
+  CLoginUser,
+  CRegisterUser,
+  CVerifyEmail,
+} from "./Auth.interface";
 import { UserServices } from "../user/User.service";
 import { AuthServices } from "./Auth.service";
 
@@ -40,10 +45,23 @@ const loginUser = catchAsync<CLoginUser>(async ({ body }) => {
 });
 
 /**
+ * Controller for handling forgot password requests. It accepts the user's email, and if the email is registered, it initiates the password reset process by sending a password reset OTP to the user's email address. The response indicates that if the email is registered, a password reset OTP has been sent, without revealing whether the email exists in the system for security reasons. The function returns an expiration time for the OTP, which can be used by the client to inform the user about how long they have to use the OTP before it expires.
+ */
+const forgotPassword = catchAsync<CForgotPassword>(async ({ body }) => {
+  const data = await AuthServices.forgotPassword(body);
+
+  return {
+    message: "If the email is registered, a password reset OTP has been sent",
+    data,
+  };
+});
+
+/**
  * Export all Auth controllers
  */
 export const AuthControllers = {
   registerUser,
   verifyEmail,
   loginUser,
+  forgotPassword,
 };

@@ -1,6 +1,9 @@
 import z from "zod";
 
-const validate = {
+/**
+ * Shared validation schemas for the Auth module. These schemas define the expected structure and constraints for the input data for various authentication-related operations, such as user registration, email verification, login, and password reset. By centralizing these validation rules, we ensure consistency across the application and make it easier to maintain and update the validation logic as needed.
+ */
+const validator = {
   email: z.email().transform((email) => email.toLowerCase()),
   password: z
     .string("Password must be between 6 and 32 characters")
@@ -15,22 +18,28 @@ const validate = {
 
 const registerUserSchema = z.object({
   body: z.object({
-    email: validate.email,
-    password: validate.password,
+    email: validator.email,
+    password: validator.password,
   }),
 });
 
 const verifyEmailSchema = z.object({
   query: z.object({
-    token: validate.token,
-    otp: validate.otp,
+    token: validator.token,
+    otp: validator.otp,
   }),
 });
 
 const loginUserSchema = z.object({
   body: z.object({
-    email: validate.email,
-    password: validate.password,
+    email: validator.email,
+    password: validator.password,
+  }),
+});
+
+const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: validator.email,
   }),
 });
 
@@ -38,4 +47,5 @@ export const AuthValidations = {
   registerUserSchema,
   verifyEmailSchema,
   loginUserSchema,
+  forgotPasswordSchema,
 };

@@ -1,8 +1,11 @@
 import { prisma } from "@/db";
 import type {
   IRegisterJWTPayload,
+  SForgotPassword,
+  SForgotPasswordPayload,
   SLoginUser,
   SRegisterUser,
+  SSendPasswordResetEmail,
   SSendVerificationEmail,
   SVerifyEmail,
 } from "./Auth.interface";
@@ -91,6 +94,45 @@ const sendVerificationEmail: SSendVerificationEmail = async ({
     })
     .catch((err) => {
       logger.error("Failed to send verification email: %o", {
+        error: err,
+        email,
+      });
+    });
+};
+
+/**
+ * Sends a password reset email to the user with a one-time password (OTP) and a reset link. The OTP is generated using a secret that combines a server-side key and the user's email, ensuring that it is unique and can be validated later when the user attempts to reset their password. The email is sent asynchronously, and any errors during the sending process are logged without affecting the user experience.
+ */
+const sendPasswordResetEmail: SSendPasswordResetEmail = async ({
+  email,
+  otp_salt,
+}) => {
+  const otp = await generateOtp({
+    secret: config.otp_key + otp_salt,
+    digits: 6,
+    period: 15 * 60,
+  });
+
+  sendMail({
+    to: email,
+    subject: `Getavails Password Reset Request`,
+    html: `
+      <p>Hello,</p>
+      <p>We received a request to reset your password for your Getavails account.</p>
+      <p>Your password reset OTP is: <strong>${otp}</strong></p>
+      <p>${config.server_url}/api/v1/auth/reset-password?email=${email}&otp=${otp}</p>
+      <p>This OTP is valid for 15 minutes. If you did not request a password reset, please ignore this email.</p>
+    `,
+  })
+    .then(({ accepted }) => {
+      debuglog(
+        "Password reset email sent to %s, accepted: %o",
+        email,
+        accepted,
+      );
+    })
+    .catch((err) => {
+      logger.error("Failed to send password reset email: %o", {
         error: err,
         email,
       });
@@ -224,8 +266,39 @@ const loginUser: SLoginUser = async (payload) => {
   };
 };
 
+/**
+ * Handles forgot password requests by checking if the provided email exists in the database and, if it does, sending a password reset email with a one-time password (OTP). The function returns an expiration time for the OTP, which is typically set to 15 minutes from the time of generation. If the email does not exist, it still returns a success response without indicating that the email is not registered, to prevent potential attackers from enumerating valid email addresses.
+ */
+const forgotPassword: SForgotPassword = async ({ email }) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    //? For security reasons, we don't want to reveal whether an email is registered or not, so we simply return without throwing an error if the user is not found.
+    return {
+      expire_at: new Date().toISOString(), // Return current time as expire_at for non-existent users to prevent timing attacks
+    };
+  }
+
+  /**
+   * Send password reset email with OTP. The OTP is generated using a secret that combines a server-side key and the user's unique OTP salt, ensuring that it is unique and can be validated later when the user attempts to reset their password. The email is sent asynchronously, and any errors during the sending process are logged without affecting the user experience. The function returns an expiration time for the OTP, which is typically set to 15 minutes from the time of generation.
+   */
+  await sendPasswordResetEmail({
+    email,
+    otp_salt: user.otp_salt,
+  });
+
+  return {
+    expire_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutes from now
+  };
+};
+
 export const AuthServices = {
   registerUser,
   verifyEmail,
   loginUser,
+  forgotPassword,
 };

@@ -32,4 +32,13 @@ router.post(
   AuthControllers.loginUser,
 );
 
+/**
+ * Route for handling forgot password requests
+ */
+router.post(
+  "/forgot-password",
+  purifyRequest(AuthValidations.forgotPasswordSchema),
+  AuthControllers.forgotPassword,
+);
+
 export const AuthRoutes = router;
