@@ -27,7 +27,15 @@ const verifyEmailSchema = z.object({
   }),
 });
 
+const loginUserSchema = z.object({
+  body: z.object({
+    email: validate.email,
+    password: validate.password,
+  }),
+});
+
 export const AuthValidations = {
   registerUserSchema,
   verifyEmailSchema,
+  loginUserSchema,
 };

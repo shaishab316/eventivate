@@ -23,4 +23,13 @@ router.get(
   AuthControllers.verifyEmail,
 );
 
+/**
+ * Route for logging in a user
+ */
+router.post(
+  "/login",
+  purifyRequest(AuthValidations.loginUserSchema),
+  AuthControllers.loginUser,
+);
+
 export const AuthRoutes = router;

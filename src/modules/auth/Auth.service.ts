@@ -1,6 +1,7 @@
 import { prisma } from "@/db";
 import type {
   IRegisterJWTPayload,
+  SLoginUser,
   SRegisterUser,
   SSendVerificationEmail,
   SVerifyEmail,
@@ -14,7 +15,9 @@ import { sendMail } from "@/utils/mailer";
 import { logger } from "@/utils/logger";
 import { debuglog as debug } from "node:util";
 import { UserServices } from "../user/User.service";
-import { decryptPayload, encryptPayload, hashPassword } from "@/utils/crypto";
+import { decryptPayload, encryptPayload, verifyPassword } from "@/utils/crypto";
+import { omit } from "@/utils/omit";
+import { userOmit } from "../user/User.constant";
 
 const debuglog = debug("app:modules:auth:service");
 
@@ -170,7 +173,59 @@ const verifyEmail: SVerifyEmail = async ({ otp, token }) => {
   }
 };
 
+/**
+ * Logs in a user by validating their email and password. It retrieves the user from the database based on the provided email, checks if the password matches using a secure comparison, and if valid, generates access and refresh tokens for authentication. If the email does not exist or the password is incorrect, it throws a ServerError with an UNAUTHORIZED status. The function returns the authenticated user and their tokens upon successful login.
+ */
+const loginUser: SLoginUser = async (payload) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: payload.email,
+    },
+  });
+
+  if (!user?.password) {
+    throw new ServerError(
+      statusCodes.UNAUTHORIZED,
+      "Invalid email or password",
+    );
+  }
+
+  const isPasswordValid = await verifyPassword(payload.password, user.password);
+
+  if (!isPasswordValid) {
+    throw new ServerError(
+      statusCodes.UNAUTHORIZED,
+      "Invalid email or password",
+    );
+  }
+
+  const access_token = signToken(
+    {
+      type: "access",
+      user_id: user.user_id,
+    },
+    config.access_token_expiry,
+  );
+
+  const refresh_token = signToken(
+    {
+      type: "refresh",
+      user_id: user.user_id,
+    },
+    config.refresh_token_expiry,
+  );
+
+  return {
+    user: omit(user, userOmit),
+    tokens: {
+      access_token,
+      refresh_token,
+    },
+  };
+};
+
 export const AuthServices = {
   registerUser,
   verifyEmail,
+  loginUser,
 };

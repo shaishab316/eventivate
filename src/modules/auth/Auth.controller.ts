@@ -1,5 +1,5 @@
 import catchAsync from "@/middlewares/catchAsync";
-import { CRegisterUser, CVerifyEmail } from "./Auth.interface";
+import { CLoginUser, CRegisterUser, CVerifyEmail } from "./Auth.interface";
 import { UserServices } from "../user/User.service";
 import { AuthServices } from "./Auth.service";
 
@@ -28,9 +28,22 @@ const verifyEmail = catchAsync<CVerifyEmail>(async ({ query }) => {
 });
 
 /**
+ * Controller for logging in a user. It validates the user's email and password, and if successful, returns the authenticated user's information along with access and refresh tokens. If the login credentials are invalid, it throws an error indicating that the email or password is incorrect.
+ */
+const loginUser = catchAsync<CLoginUser>(async ({ body }) => {
+  const data = await AuthServices.loginUser(body);
+
+  return {
+    message: "Login successful",
+    data,
+  };
+});
+
+/**
  * Export all Auth controllers
  */
 export const AuthControllers = {
   registerUser,
   verifyEmail,
+  loginUser,
 };

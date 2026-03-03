@@ -23,6 +23,16 @@ export type SVerifyEmail = (payload: SVerifyEmailPayload) => Promise<{
   };
 }>;
 
+export type CLoginUser = z.infer<typeof AuthValidations.loginUserSchema>;
+export type SLoginUserPayload = CLoginUser["body"];
+export type SLoginUser = (payload: SLoginUserPayload) => Promise<{
+  user: MSafeUser;
+  tokens: {
+    access_token: string;
+    refresh_token: string;
+  };
+}>;
+
 /**********************************/
 /******* Service interface ********/
 /**********************************/
