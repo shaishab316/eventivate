@@ -1,0 +1,52 @@
+/**
+ * The Profile model represents a user's profile in the system. Each profile is associated with a user and can have different types, such as an artist profile.
+ * The Profile model contains fields for the profile ID, user ID, creation and update timestamps,
+ * and the profile type. It has a one-to-one relationship with the User model, meaning each user can have at most one profile.
+ * The ArtistProfile model is a specific type of profile that contains additional information relevant to artists, such as name, description, and genre.
+ */
+
+model Profile {
+  profile_id String @id // p-{sl}
+  profile_sl Int    @unique @default(autoincrement())
+
+  user_id    String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  profile_type ProfileType
+
+  user           User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  artist_profile ArtistProfile?
+
+  @@index([user_id])
+  @@map("profiles")
+}
+
+enum ProfileType {
+  ARTIST
+}
+
+/**
+ * ArtistProfile is a specific type of Profile that contains additional information relevant to artists.
+ * It has a one-to-one relationship with the Profile model, meaning each Profile can have at most one ArtistProfile.
+ * The ArtistProfile includes fields such as name, description, and genre, which are specific to artists.
+ * The profile_id in ArtistProfile is a foreign key that references the profile_id in the Profile model.
+ */
+
+model ArtistProfile {
+  artist_profile_id String @id // ap-{sl}
+  artist_profile_sl Int    @unique @default(autoincrement())
+
+  profile_id String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  name        String
+  description String?
+  genre       String?
+
+  profile Profile @relation(fields: [profile_id], references: [profile_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([profile_id])
+  @@map("artist_profiles")
+}

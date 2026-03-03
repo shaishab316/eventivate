@@ -1,0 +1,39 @@
+/**
+ * User model definition using Prisma schema.
+ * This model represents the users of the application, including their authentication details and profile information.
+ * Each user has a unique identifier, email, password, and various flags to indicate their status and role within the system.
+ */
+
+model User {
+  user_id    String   @id // u-{sl} (public ID)
+  user_sl    Int      @unique @default(autoincrement()) // internal sequence
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  //? auth
+  role     EUserRole @default(USER)
+  email    String    @unique
+  password String
+  otp_salt String
+
+  //? flags
+  is_verified    Boolean @default(false)
+  is_active      Boolean @default(false)
+  is_admin       Boolean @default(false)
+  is_super_admin Boolean @default(false)
+
+  profile Profile?
+
+  @@map("users")
+}
+
+enum EUserRole {
+  USER
+  ARTIST
+}
+
+enum EGender {
+  MALE
+  FEMALE
+  OTHER
+}
