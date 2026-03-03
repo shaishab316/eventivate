@@ -1,6 +1,9 @@
 /* eslint-disable no-unused-vars */
 import { ZodObject } from "zod";
 import catchAsync from "./catchAsync";
+import { debuglog as debug } from "node:util";
+
+const debuglog = debug("app:request");
 
 const keys = ["body", "query", "params", "cookies"] as const;
 
@@ -37,9 +40,7 @@ const purifyRequest = (...schemas: ZodObject[]) =>
 
     next();
 
-    if (process.env.NODE_ENV !== "production")
-      // eslint-disable-next-line no-console
-      keys.forEach((key) => console.log(`${key} :`, req[key]));
+    keys.forEach((key) => debuglog(`${key} : %o`, req[key]));
   });
 
 export default purifyRequest;

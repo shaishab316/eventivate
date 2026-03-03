@@ -6,8 +6,8 @@ install: ## Install dependencies and generate Prisma client
 	pnpm install
 	$(PRISMA) generate
 
-dev: ## Start development server
-	pnpm dev
+dev: ## Start development server with debugging
+	NODE_DEBUG=app:* pnpm dev
 
 build: ## Build for production
 	pnpm build
