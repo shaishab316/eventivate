@@ -18,6 +18,9 @@ start: ## Start production server
 typecheck: ## Run TypeScript type checking
 	pnpm typecheck
 
+new-module: ## Create a new module (e.g., make new-module name=users)
+	pnpm new-module
+
 generate: ## Generate Prisma client
 	$(PRISMA) generate
 
