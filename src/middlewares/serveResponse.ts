@@ -1,10 +1,10 @@
 import { statusCodes } from "@/lib/status_codes";
-import { Response } from "express";
+import type { Response } from "express";
 
 export type TPagination = {
   page: number;
   limit: number;
-  totalPages: number;
+  total_pages: number;
   total: number;
 };
 

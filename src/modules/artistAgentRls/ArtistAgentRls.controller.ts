@@ -1,5 +1,8 @@
 import catchAsync from "@/middlewares/catchAsync";
-import { CSendRequestToArtistAgent } from "./ArtistAgentRls.interface";
+import {
+  CGetPendingRequests,
+  CSendRequestToArtistAgent,
+} from "./ArtistAgentRls.interface";
 import { ArtistAgentRlsServices } from "./ArtistAgentRls.service";
 
 /**
@@ -20,8 +23,30 @@ const sendRequestToArtistAgent = catchAsync<CSendRequestToArtistAgent>(
 );
 
 /**
+ * Controller for fetching pending requests for a user. It validates the query parameters, retrieves the pending requests from the database based on the provided pagination and search criteria, and returns a success message along with the fetched requests and pagination metadata. If any validation fails, it throws an appropriate error with a descriptive message.
+ */
+const getPendingRequests = catchAsync<CGetPendingRequests>(
+  async ({ query, user }) => {
+    const { pagination, requests } =
+      await ArtistAgentRlsServices.getPendingRequests({
+        ...query,
+        user_id: user.user_id,
+      });
+
+    return {
+      message: "Pending requests fetched successfully",
+      meta: {
+        pagination,
+      },
+      data: requests,
+    };
+  },
+);
+
+/**
  * Exporting the controllers for the ArtistAgentRls module, which currently includes the sendRequestToArtistAgent controller. This allows other parts of the application to import and use these controllers to handle incoming requests related to artist-agent relationships.
  */
 export const ArtistAgentRlsControllers = {
   sendRequestToArtistAgent,
+  getPendingRequests,
 };

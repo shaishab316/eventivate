@@ -1,4 +1,4 @@
-import purifyRequest from "@/middlewares/purifyRequest";
+import { purifyRequest } from "@/middlewares/purifyRequest";
 import { Router } from "express";
 import { AuthValidations } from "./Auth.validation";
 import { AuthControllers } from "./Auth.controller";

@@ -1,7 +1,13 @@
 import { ServerError } from "@/errors";
-import type { SSendRequestToArtistAgent } from "./ArtistAgentRls.interface";
+import type {
+  SGetPendingRequests,
+  SSendRequestToArtistAgent,
+} from "./ArtistAgentRls.interface";
 import { statusCodes } from "@/lib/status_codes";
-import { prisma } from "@/db";
+import { Prisma, prisma } from "@/db";
+import { debuglog as debug } from "node:util";
+
+const debugLog = debug("app:modules:artist_agent_rls:service");
 
 /**
  * Send a request to connect with an artist agent
@@ -40,6 +46,13 @@ const sendRequestToArtistAgent: SSendRequestToArtistAgent = async ({
       },
     },
   });
+
+  debugLog(
+    "Existing request between user %d and user %d: %o",
+    from_user_id,
+    to_user_id,
+    existingRequest,
+  );
 
   /**
    * If there is an existing request, we need to check its status before allowing the user to create a new request. If the existing request is pending or blocked, we should not allow the user to create a new request. If the existing request is rejected, we can allow the user to create a new request by deleting the existing rejected request.
@@ -81,6 +94,13 @@ const sendRequestToArtistAgent: SSendRequestToArtistAgent = async ({
     },
   });
 
+  debugLog(
+    "Existing relation between user %d and user %d: %o",
+    from_user_id,
+    to_user_id,
+    existingRelation,
+  );
+
   /**
    * If there is an existing relation, we should not allow the user to create a new request. This is because the users are already connected, and there is no need for a new request to be created. We should throw an error and not allow the user to create a new request if there is an existing relation between the users.
    */
@@ -99,7 +119,65 @@ const sendRequestToArtistAgent: SSendRequestToArtistAgent = async ({
     },
   });
 
+  debugLog("New request created: %o", newRequest);
+
   return newRequest;
+};
+
+/**
+ * Get pending requests for a user
+ */
+const getPendingRequests: SGetPendingRequests = async ({
+  limit,
+  page,
+  user_id,
+  sort_order,
+  search,
+}) => {
+  const offset = (page - 1) * limit;
+
+  const whereClause: Prisma.ArtistAgentRlsReqWhereInput = {
+    to_user_id: user_id,
+    status: "PENDING",
+  };
+
+  if (search) {
+    /**
+     * Todo: We need to implement a search functionality that allows users to search for pending requests by the name of the artist or agent. This will require us to join the artistAgentRlsReq table with the user table to get the names of the artists and agents, and then filter the results based on the search query. We should also consider implementing pagination for the search results to improve performance and user experience.
+     */
+  }
+
+  debugLog("Fetching pending requests with where clause: %o", whereClause);
+
+  const pendingRequests = await prisma.artistAgentRlsReq.findMany({
+    where: whereClause,
+    orderBy: {
+      requested_at: sort_order,
+    },
+    skip: offset,
+    take: limit,
+  });
+
+  const totalCount = await prisma.artistAgentRlsReq.count({
+    where: whereClause,
+  });
+
+  debugLog(
+    "Fetched %d pending requests out of total %d for user %s",
+    pendingRequests.length,
+    totalCount,
+    user_id,
+  );
+
+  return {
+    pagination: {
+      page,
+      limit,
+      total: totalCount,
+      total_pages: Math.ceil(totalCount / limit),
+    },
+    requests: pendingRequests,
+  };
 };
 
 /**
@@ -107,4 +185,5 @@ const sendRequestToArtistAgent: SSendRequestToArtistAgent = async ({
  */
 export const ArtistAgentRlsServices = {
   sendRequestToArtistAgent,
+  getPendingRequests,
 };
