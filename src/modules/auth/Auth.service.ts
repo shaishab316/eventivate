@@ -1,9 +1,10 @@
 import { prisma } from "@/db";
 import type {
+  IAccessJWTPayload,
+  IRefreshJWTPayload,
   IRegisterJWTPayload,
   IResetPasswordJWTPayload,
   SForgotPassword,
-  SForgotPasswordPayload,
   SLoginUser,
   SRegisterUser,
   SResetPassword,
@@ -189,7 +190,7 @@ const verifyEmail: SVerifyEmail = async ({ otp, token }) => {
       {
         type: "access",
         user_id: newUser.user_id,
-      },
+      } satisfies IAccessJWTPayload,
       config.access_token_expiry,
     );
 
@@ -197,7 +198,7 @@ const verifyEmail: SVerifyEmail = async ({ otp, token }) => {
       {
         type: "refresh",
         user_id: newUser.user_id,
-      },
+      } satisfies IRefreshJWTPayload,
       config.refresh_token_expiry,
     );
 
@@ -249,7 +250,7 @@ const loginUser: SLoginUser = async (payload) => {
     {
       type: "access",
       user_id: user.user_id,
-    },
+    } satisfies IAccessJWTPayload,
     config.access_token_expiry,
   );
 
@@ -257,7 +258,7 @@ const loginUser: SLoginUser = async (payload) => {
     {
       type: "refresh",
       user_id: user.user_id,
-    },
+    } satisfies IRefreshJWTPayload,
     config.refresh_token_expiry,
   );
 

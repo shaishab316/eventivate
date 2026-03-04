@@ -1,0 +1,39 @@
+model ArtistAgentRls {
+  id           String   @id @default(uuid())
+  connected_at DateTime @default(now())
+
+  artist_id String
+  agent_id  String
+
+  artist User @relation("artist_agent_rls_artist", fields: [artist_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  agent  User @relation("artist_agent_rls_agent", fields: [agent_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([artist_id, agent_id], name: "artist_agent")
+  @@index([connected_at])
+  @@map("artist_agent_relations")
+}
+
+model ArtistAgentRlsReq {
+  id           String                  @id @default(uuid())
+  requested_at DateTime                @default(now())
+  status       ArtistAgentRlsReqStatus @default(PENDING)
+
+  request_message String? // Optional message from the requester
+  reject_message  String? // Optional message from the rejector
+
+  from_user_id String
+  to_user_id   String
+
+  from_user User @relation("artist_agent_rls_req_from", fields: [from_user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  to_user   User @relation("artist_agent_rls_req_to", fields: [to_user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([from_user_id, to_user_id], name: "from_to")
+  @@index([requested_at])
+  @@map("artist_agent_relation_requests")
+}
+
+enum ArtistAgentRlsReqStatus {
+  PENDING
+  REJECTED
+  BLOCKED
+}

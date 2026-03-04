@@ -1,8 +1,10 @@
-import { AuthRoutes } from "@/modules/auth/Auth.route";
 import { Router } from "express";
+import { AuthRoutes } from "@/modules/auth/Auth.route";
+import { ArtistAgentRlsRoutes } from "@/modules/artistAgentRls/ArtistAgentRls.route";
 
 const router = Router();
 
 router.use("/auth", AuthRoutes);
+router.use("/artist-agent", ArtistAgentRlsRoutes);
 
 export const v1Routes = router;

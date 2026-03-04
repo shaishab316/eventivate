@@ -24,6 +24,11 @@ model User {
 
   profile Profile?
 
+  artist_agent_rls_artist       ArtistAgentRls[]    @relation("artist_agent_rls_artist")
+  artist_agent_rls_agent        ArtistAgentRls[]    @relation("artist_agent_rls_agent")
+  artist_agent_rls_req_send     ArtistAgentRlsReq[] @relation("artist_agent_rls_req_from")
+  artist_agent_rls_req_received ArtistAgentRlsReq[] @relation("artist_agent_rls_req_to")
+
   @@index([email, user_sl, user_id, role])
   @@map("users")
 }

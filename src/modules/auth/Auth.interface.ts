@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import type { AuthValidations } from "./Auth.validation";
 import type { MSafeUser } from "../user/User.interface";
+import type { AppJwtPayload } from "@/utils/jwt";
 
 /**********************************/
 /****** Validation interface ******/
@@ -60,15 +61,25 @@ export type SResetPassword = (payload: SResetPasswordPayload) => Promise<void>;
 /**********************************/
 /******* Service interface ********/
 /**********************************/
-export type IRegisterJWTPayload = {
+export interface IRegisterJWTPayload extends AppJwtPayload {
   type: "register";
   encrypted_body: string; // Encrypted string containing the registration payload (email, password, etc.)
-};
+}
 
-export type IResetPasswordJWTPayload = {
+export interface IResetPasswordJWTPayload extends AppJwtPayload {
   type: "reset_password";
   user_id: string;
-};
+}
+
+export interface IAccessJWTPayload extends AppJwtPayload {
+  type: "access";
+  user_id: string;
+}
+
+export interface IRefreshJWTPayload extends AppJwtPayload {
+  type: "refresh";
+  user_id: string;
+}
 
 export type SSendVerificationEmailPayload = {
   email: string;
