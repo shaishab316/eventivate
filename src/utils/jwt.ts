@@ -12,6 +12,12 @@ const JWT = {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type AppJwtType = "access" | "refresh" | "register" | "reset_password";
+
+export interface AppJwtPayload extends JwtPayload {
+  type: AppJwtType;
+}
+
 type JwtPayload = Record<string, unknown>;
 type TimeUnit = `${number}${"s" | "m" | "h" | "d" | "w"}`;
 
