@@ -1,0 +1,19 @@
+model Profile {
+  profile_id String   @id //? p_{user_id}
+  user_id    String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  profile_type ProfileType
+  is_verified  Boolean     @default(false)
+
+  user           User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  artist_profile ArtistProfile?
+
+  @@index([user_id])
+  @@map("profiles")
+}
+
+enum ProfileType {
+  ARTIST
+}

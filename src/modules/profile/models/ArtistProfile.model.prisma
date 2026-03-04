@@ -1,0 +1,143 @@
+model ArtistProfile {
+  artist_profile_id String   @id // ap-{sl}
+  profile_id        String   @unique
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  stage_name    String?
+  real_name     String?
+  profile_photo String?
+  cover_photo   String?
+  bio           String?
+  genre         String[]
+  sub_genre     String[]
+
+  artist_type  EArtistType?
+  years_active Int?
+  press_kit    String?
+
+  booking_fee_min      Int?
+  booking_fee_max      Int?
+  booking_fee_currency String? @default("USD")
+
+  rating             Float?
+  total_performances Int    @default(0)
+
+  profile          Profile               @relation(fields: [profile_id], references: [profile_id], onDelete: Cascade, onUpdate: Cascade)
+  members          ArtistProfileMember[]
+  social_link_list ArtistSocialLink[]
+  rider_list       ArtistRider[]
+  media_list       ArtistMedia[]
+  track_list       ArtistTrack[]
+
+  @@index([profile_id])
+  @@map("artist_profiles")
+}
+
+model ArtistProfileMember {
+  member_id         Int    @id @default(autoincrement())
+  artist_profile_id String
+
+  name  String
+  role  String
+  photo String?
+
+  artist_profile ArtistProfile @relation(fields: [artist_profile_id], references: [artist_profile_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([artist_profile_id])
+  @@map("artist_profile_members")
+}
+
+model ArtistSocialLink {
+  social_link_id    String          @id
+  artist_profile_id String
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+  platform          ESocialPlatform
+  url               String
+
+  artist_profile ArtistProfile @relation(fields: [artist_profile_id], references: [artist_profile_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([artist_profile_id])
+  @@map("artist_social_links")
+}
+
+model ArtistRider {
+  rider_id          String     @id
+  artist_profile_id String
+  created_at        DateTime   @default(now())
+  updated_at        DateTime   @updatedAt
+  rider_type        ERiderType
+  item              String
+  notes             String?
+
+  artist_profile ArtistProfile @relation(fields: [artist_profile_id], references: [artist_profile_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([artist_profile_id])
+  @@map("artist_riders")
+}
+
+model ArtistMedia {
+  media_id          String     @id
+  artist_profile_id String
+  created_at        DateTime   @default(now())
+  updated_at        DateTime   @updatedAt
+  media_type        EMediaType
+  url               String
+  thumbnail         String?
+  caption           String?
+  display_order     Int        @default(0)
+
+  artist_profile ArtistProfile @relation(fields: [artist_profile_id], references: [artist_profile_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([artist_profile_id])
+  @@map("artist_media")
+}
+
+model ArtistTrack {
+  track_id          String   @id
+  artist_profile_id String
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  title             String
+  url               String
+  platform          String?
+  display_order     Int      @default(0)
+
+  artist_profile ArtistProfile @relation(fields: [artist_profile_id], references: [artist_profile_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([artist_profile_id])
+  @@map("artist_tracks")
+}
+
+enum EArtistType {
+  SOLO
+  BAND
+  DJ
+  PRODUCER
+  COMEDIAN
+  SPEAKER
+}
+
+enum ESocialPlatform {
+  INSTAGRAM
+  TWITTER
+  FACEBOOK
+  YOUTUBE
+  TIKTOK
+  SPOTIFY
+  SOUNDCLOUD
+  APPLE_MUSIC
+  LINKEDIN
+  WEBSITE
+}
+
+enum ERiderType {
+  TECHNICAL
+  HOSPITALITY
+}
+
+enum EMediaType {
+  PHOTO
+  VIDEO
+}
