@@ -4,6 +4,7 @@ import { ServerError } from "@/errors";
 import { statusCodes } from "@/lib/status_codes";
 import { userOmit } from "./User.constant";
 import { generateOtpSalt, hashPassword } from "@/utils/crypto";
+import { ProfileServices } from "../profile/Profile.service";
 
 /**
  * Service to create a new user
@@ -62,8 +63,20 @@ const createUser: SCreateUser = async (payload) => {
       user_id: Math.random().toString(36).substring(2, 10),
       otp_salt: generateOtpSalt(),
     },
+    include: {
+      profile: true,
+    },
     omit: userOmit,
   });
+
+  /**
+   * Step 3: Create profile based on user role
+   *
+   * Note: We do this after creating the user because we need the generated `user_id` to create the profile. Depending on your application's needs, you could also consider using database triggers or other mechanisms to automatically create a profile when a user is created, but handling it in application code gives you more control and flexibility (e.g. different profile types based on role).
+   */
+  const profile = await ProfileServices.createProfile(createdUser);
+
+  createdUser.profile = profile;
 
   return createdUser;
 };

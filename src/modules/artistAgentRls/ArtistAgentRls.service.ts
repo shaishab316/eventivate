@@ -151,6 +151,19 @@ const getPendingRequests: SGetPendingRequests = async ({
 
   const pendingRequests = await prisma.artistAgentRlsReq.findMany({
     where: whereClause,
+    include: {
+      from_user: {
+        select: {
+          profile: {
+            include: {
+              artist_profile: true
+
+              //? Todo: include all profile types
+            }
+          }
+        }
+      }
+    },
     orderBy: {
       requested_at: sort_order,
     },

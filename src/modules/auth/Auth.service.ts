@@ -7,6 +7,7 @@ import type {
   SForgotPassword,
   SLoginUser,
   SRegisterUser,
+  SRegisterUserPayload,
   SResetPassword,
   SResetPasswordOtpVerify,
   SSendPasswordResetEmail,
@@ -160,7 +161,9 @@ const verifyEmail: SVerifyEmail = async ({ otp, token }) => {
       throw new ServerError(statusCodes.UNAUTHORIZED, "Invalid token type");
     }
 
-    const payload = JSON.parse(decryptPayload(encrypted_body));
+    const payload = JSON.parse(
+      decryptPayload(encrypted_body),
+    ) as SRegisterUserPayload;
 
     const expectedOtp = await generateOtp({
       secret: config.otp_key + payload.email,

@@ -1,3 +1,4 @@
+import { EUserRole } from "@/db";
 import z from "zod";
 
 /**
@@ -5,21 +6,27 @@ import z from "zod";
  */
 const validator = {
   email: z.email().transform((email) => email.toLowerCase()),
+
   password: z
     .string("Password must be between 6 and 32 characters")
     .min(6, "Password must be between 6 and 32 characters")
     .max(32, "Password must be between 6 and 32 characters"),
+
   otp: z
     .string("OTP must be a string")
     .length(6, "OTP must be exactly 6 digits")
     .regex(/^\d+$/, "OTP must contain only digits"),
+
   token: z.string("Token must be a string").max(1000, "Token is too long"),
+
+  role: z.enum(EUserRole),
 };
 
 const registerUserSchema = z.object({
   body: z.object({
     email: validator.email,
     password: validator.password,
+    role: validator.role.default(EUserRole.USER),
   }),
 });
 

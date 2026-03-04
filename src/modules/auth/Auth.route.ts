@@ -9,7 +9,7 @@ const router = Router();
  * Route for registering a new user
  */
 router.post(
-  "/register-user",
+  "/register",
   purifyRequest(AuthValidations.registerUserSchema),
   AuthControllers.registerUser,
 );
