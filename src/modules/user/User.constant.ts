@@ -9,6 +9,9 @@ export const userOmit = {
   otp_salt: true,
 } as const satisfies Prisma.UserOmit;
 
+/**
+ * User includes. This is used to specify which related data should be included when fetching a user. For example, when fetching a user, we want to include the profile.
+ */
 export const userIncludes = {
   profile: {
     include: profileIncludes,
