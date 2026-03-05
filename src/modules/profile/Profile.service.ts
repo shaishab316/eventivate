@@ -1,6 +1,8 @@
 import { prisma } from "@/db";
 import { MSafeUser } from "../user/User.interface";
-import { artistProfileIncludes, profileIncludes } from "./Profile.constant";
+import { profileIncludes } from "./Profile.constant";
+import { artistProfileIncludes } from "../artistProfile/ArtistProfile.constant";
+import { ArtistProfileServices } from "../artistProfile/ArtistProfile.service";
 
 /**
  * Service to create or update a profile based on user information
@@ -37,18 +39,9 @@ const createProfile = async (user: MSafeUser) => {
        *
        * Note: Similar to the profile upsert, we use upsert here for simplicity. Adjust as needed based on your application's requirements.
        */
-      const artistProfile = await prisma.artistProfile.upsert({
-        where: {
-          profile_id: profile.profile_id,
-        },
-        update: {
-          artist_profile_id: `ap_${user.user_sl}`,
-        },
-        create: {
-          artist_profile_id: `ap_${user.user_sl}`,
-          profile_id: profile.profile_id,
-        },
-        include: artistProfileIncludes,
+      const artistProfile = await ArtistProfileServices.createProfile({
+        user,
+        profile,
       });
 
       profile.artist_profile = artistProfile;

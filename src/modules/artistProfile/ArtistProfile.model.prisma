@@ -49,7 +49,7 @@ model ArtistProfileMember {
 }
 
 model ArtistSocialLink {
-  social_link_id    String          @id
+  id                Int             @id @default(autoincrement())
   artist_profile_id String
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
@@ -63,7 +63,7 @@ model ArtistSocialLink {
 }
 
 model ArtistRider {
-  rider_id          String     @id
+  id                Int        @id @default(autoincrement())
   artist_profile_id String
   created_at        DateTime   @default(now())
   updated_at        DateTime   @updatedAt
@@ -78,7 +78,7 @@ model ArtistRider {
 }
 
 model ArtistMedia {
-  media_id          String     @id
+  id                Int        @id @default(autoincrement())
   artist_profile_id String
   created_at        DateTime   @default(now())
   updated_at        DateTime   @updatedAt
@@ -95,7 +95,7 @@ model ArtistMedia {
 }
 
 model ArtistTrack {
-  track_id          String   @id
+  id                Int      @id @default(autoincrement())
   artist_profile_id String
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
