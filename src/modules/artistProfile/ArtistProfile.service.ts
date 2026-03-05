@@ -29,12 +29,20 @@ import type {
 const assertProfileExists = async (artist_profile_id: string) => {
   const exists = await prisma.artistProfile.findUnique({
     where: { artist_profile_id },
-    select: { artist_profile_id: true },
+    include: {
+      profile: {
+        select: {
+          user_id: true,
+        },
+      },
+    },
   });
 
   if (!exists) {
     throw new ServerError(statusCodes.NOT_FOUND, "Artist profile not found");
   }
+
+  return exists;
 };
 
 /*************************************/
@@ -83,8 +91,15 @@ const getProfile: SGetProfile = async (artist_profile_id) => {
  * Returns the full updated profile with all relations included.
  * Throws NOT_FOUND if the profile does not exist.
  */
-const updateProfile: SUpdateProfile = async (artist_profile_id, data) => {
-  await assertProfileExists(artist_profile_id);
+const updateProfile: SUpdateProfile = async (artist_profile_id, data, user) => {
+  const { profile } = await assertProfileExists(artist_profile_id);
+
+  if (profile.user_id !== user.user_id) {
+    throw new ServerError(
+      statusCodes.FORBIDDEN,
+      "You do not have permission to update this artist profile",
+    );
+  }
 
   return await prisma.artistProfile.update({
     where: { artist_profile_id },

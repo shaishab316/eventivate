@@ -40,17 +40,20 @@ const getProfile = catchAsync<CGetProfile>(async ({ params }) => {
  * Controller for updating the core fields of an artist profile such as
  * stage name, bio, genres, booking fees, and other profile metadata.
  */
-const updateProfile = catchAsync<CUpdateProfile>(async ({ params, body }) => {
-  const data = await ArtistProfileServices.updateProfile(
-    params.artist_profile_id,
-    body,
-  );
+const updateProfile = catchAsync<CUpdateProfile>(
+  async ({ params, body, user }) => {
+    const data = await ArtistProfileServices.updateProfile(
+      params.artist_profile_id,
+      body,
+      user,
+    );
 
-  return {
-    message: "Artist profile updated successfully",
-    data,
-  };
-});
+    return {
+      message: "Artist profile updated successfully",
+      data,
+    };
+  },
+);
 
 /*************************************/
 /************* Members ***************/

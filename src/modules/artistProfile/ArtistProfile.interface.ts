@@ -101,6 +101,7 @@ export type SUpdateProfilePayload = CUpdateProfile["body"];
 export type SUpdateProfile = (
   artist_profile_id: string,
   data: SUpdateProfilePayload,
+  user: MSafeUser,
 ) => Promise<MArtistProfile>;
 
 // --- Members ---

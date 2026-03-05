@@ -3,21 +3,9 @@ import { purifyRequest } from "@/middlewares/purifyRequest";
 import { ArtistProfileValidations } from "./ArtistProfile.validation";
 import { ArtistProfileControllers } from "./ArtistProfile.controller";
 import { auth } from "@/middlewares/auth";
+import capture from "@/middlewares/capture";
 
 const router = Router();
-
-/**
- * All artist profile routes require authentication.
- * The `authenticate` middleware verifies the access token and attaches the
- * authenticated user to `req.user` for downstream use.
- */
-router.use(
-  auth({
-    token_type: "access",
-    should_verified: true,
-    allowed_roles: ["ARTIST"],
-  }),
-);
 
 /*************************************/
 /*********** Profile Core ************/
@@ -34,11 +22,29 @@ router.get(
 );
 
 /**
+ * All artist profile routes require authentication.
+ * The `authenticate` middleware verifies the access token and attaches the
+ * authenticated user to `req.user` for downstream use.
+ */
+router.use(
+  auth({
+    token_type: "access",
+    should_verified: true,
+    allowed_roles: ["ARTIST"],
+  }),
+);
+
+/**
  * PATCH /:artist_profile_id
  * Update core profile fields (bio, genre, booking fees, etc.)
  */
 router.patch(
   "/:artist_profile_id",
+  capture({
+    profile_photo: { fileType: "images", maxSizeMB: 10 },
+    cover_photo: { fileType: "images", maxSizeMB: 30 },
+    press_kit: { fileType: "documents", maxSizeMB: 20 },
+  }),
   purifyRequest(ArtistProfileValidations.updateProfileSchema),
   ArtistProfileControllers.updateProfile,
 );
