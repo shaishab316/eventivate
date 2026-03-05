@@ -25,7 +25,7 @@ import { debuglog as debug } from "node:util";
 import { UserServices } from "../user/User.service";
 import { decryptPayload, encryptPayload, verifyPassword } from "@/utils/crypto";
 import { omit } from "@/utils/omit";
-import { userOmit } from "../user/User.constant";
+import { userIncludes, userOmit } from "../user/User.constant";
 
 const debuglog = debug("app:modules:auth:service");
 
@@ -231,6 +231,7 @@ const loginUser: SLoginUser = async (payload) => {
     where: {
       email: payload.email,
     },
+    include: userIncludes,
   });
 
   if (!user?.password) {

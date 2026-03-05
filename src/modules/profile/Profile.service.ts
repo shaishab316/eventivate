@@ -1,5 +1,6 @@
 import { prisma } from "@/db";
 import { MSafeUser } from "../user/User.interface";
+import { artistProfileIncludes, profileIncludes } from "./Profile.constant";
 
 /**
  * Service to create or update a profile based on user information
@@ -16,13 +17,7 @@ const createProfile = async (user: MSafeUser) => {
     where: {
       user_id: user.user_id,
     },
-    include: {
-      artist_profile: true,
-
-      /**
-       * Todo: include other profile types when they are added (e.g. VenueProfile, PromoterProfile)
-       */
-    },
+    include: profileIncludes,
     update: {
       profile_type: user.role,
     },
@@ -53,13 +48,7 @@ const createProfile = async (user: MSafeUser) => {
           artist_profile_id: `ap_${user.user_sl}`,
           profile_id: profile.profile_id,
         },
-        include: {
-          members: true,
-          media_list: true,
-          rider_list: true,
-          social_link_list: true,
-          track_list: true,
-        },
+        include: artistProfileIncludes,
       });
 
       profile.artist_profile = artistProfile;
