@@ -1,222 +1,143 @@
-# GetAvails
+<div align="center">
 
-A comprehensive event management system with multi-role support including artists, agents, venues, and organizers. Features real-time chat, Stripe payments, booking management, and detailed analytics dashboards.
+<img width="1299" height="585" alt="image" src="https://github.com/user-attachments/assets/16eeff29-d54a-4580-b7b4-ee01fe7ff67d" />
 
-[![Template](https://img.shields.io/badge/🗂️%20express--it-blue?style=for-the-badge&logoColor=white)](https://github.com/shaishab316/express-it)
-![Node.js](https://img.shields.io/badge/node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express.js](https://img.shields.io/badge/express.js-000000?style=for-the-badge&logo=express&logoColor=white)
-![TypeScript](https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Prisma](https://img.shields.io/badge/prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![Socket.io](https://img.shields.io/badge/socket.io-010101?style=for-the-badge&logo=socketdotio&logoColor=white)
-![Stripe](https://img.shields.io/badge/stripe-008CDD?style=for-the-badge&logo=stripe&logoColor=white)
-![Redis](https://img.shields.io/badge/redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![dotenvx](https://img.shields.io/badge/dotenvx-00D9FF?style=for-the-badge&logo=dotenv&logoColor=white)
+**Comprehensive Event Management Platform**
 
-## 🌟 Key Features
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
+[![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com)
+[![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://socket.io)
 
-### 👥 Multi-Role User Management
+*From booking request to payout — fully automated.*
 
-- **Artists**: Profile management, agent relationships, booking tracking
-- **Agents**: Artist representation, offer creation, commission management (20%)
-- **Venues**: Availability management, booking acceptance, revenue tracking
-- **Organizers**: Event creation, artist/venue booking, ticket sales
-- Role-based authentication and authorization
-- Account verification via OTP
-- Password reset functionality
+</div>
 
-### 🎭 Event Management
+---
 
-- Create and manage events with detailed information
-- Ticket pricing and capacity management
-- Event status tracking (Draft, Published, Completed, Timeout)
-- Event search and filtering
-- Organizer dashboard with event statistics
+## Overview
 
-### 💼 Booking System
+**Eventivate** is a production-grade event management platform that connects artists, agents, venues, and organizers in one unified system. It handles the full event lifecycle — booking negotiations, ticket sales, real-time messaging, and automated Stripe payouts — across four distinct user roles.
 
-- **Agent Offers**: Agents create offers for artists to organizers
-- **Venue Offers**: Venues send offers to organizers
-- Offer status management (Pending, Approved, Cancelled)
-- Automated commission splits:
-  - Artists receive 80% of booking amount
-  - Agents receive 20% of booking amount
-  - Venues receive full booking amount minus Stripe fees
-- Date range booking with conflict prevention
+---
 
-### 💳 Payment Integration
+## Architecture
 
-- Stripe Checkout for secure payments
-- Support for agent offers, venue offers, and ticket purchases
-- Automated wallet crediting after successful payments
-- Withdrawal system with Stripe Connect
-- Transaction history and balance tracking
-
-### 🎟️ Ticket System
-
-- Real-time ticket availability tracking
-- Secure ticket purchase flow with 5-minute reservation
-- Automatic capacity management
-- Ticket expiration handling for unpaid reservations
-- QR code generation for ticket validation
-
-### 💬 Real-time Chat
-
-- Socket.io powered messaging
-- Private conversations between users
-- Message deletion with cascade cleanup
-- Media file sharing support
-- Read receipts and online status
-- Unread message filtering
-
-### 📊 Analytics & Dashboards
-
-- **Artist Dashboard**:
-  - Total revenue (80% commission)
-  - Total bookings
-  - Monthly booking statistics
-  - Monthly revenue trends
-- **Agent Dashboard**:
-  - Total revenue (20% commission)
-  - Total bookings
-  - Monthly booking statistics
-  - Monthly revenue trends
-- **Venue Dashboard**:
-  - Total revenue
-  - Total bookings
-  - Monthly booking statistics
-  - Monthly revenue trends
-- **Organizer Dashboard**:
-  - Total ticket revenue
-  - Total tickets sold
-  - Monthly event statistics
-  - Monthly revenue trends
-
-### 🔐 Security Features
-
-- JWT-based authentication
-- Role-based access control (RBAC)
-- Rate limiting on API endpoints
-- Input validation with Zod schemas
-- Secure password hashing with bcrypt
-- OTP verification for sensitive operations
-
-### 🛠️ Background Jobs
-
-- Bull queue for job processing
-- Email notifications (account verification, password reset)
-- File deletion queue for media cleanup
-- Stripe account connection queue
-- Withdrawal processing queue
-- Automatic ticket expiration cleanup
-
-## 🏗️ Architecture
-
-[![ER_Diagram.svg](./ER_Diagram.svg)](./ER_Diagram.svg)
-
-### Database Schema
-
-- **Users**: Multi-role user system with role-specific fields
-- **Events**: Event management with organizer relationships
-- **Tickets**: Ticket booking and payment tracking
-- **Agent Offers**: Artist booking offers from agents
-- **Venue Offers**: Venue booking offers to organizers
-- **Chats & Messages**: Real-time messaging system
-- Optimized indexes for performance
-- Cascading deletes for data integrity
-
-### Tech Stack
-
-- **Backend**: Node.js, Express.js, TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Real-time**: Socket.io for WebSocket connections
-- **Payments**: Stripe (Checkout, Connect, Webhooks)
-- **Caching**: Redis for session and queue management
-- **Email**: Nodemailer with MJML templates
-- **Validation**: Zod for runtime type checking
-- **Authentication**: JWT with refresh tokens
-- **File Upload**: Multer for media handling
-
-## 📦 Installation
-
-### Prerequisites
-
-- Node.js (v18 or higher)
-- PostgreSQL (v14 or higher)
-- Redis (v6 or higher)
-- Stripe account
-- Docker (optional)
-
-### Setup
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/shaishab316/getavails-server.git
-cd getavails-server
+```
+src/
+├── modules/<feature>/
+│   ├── <feature>.validation.ts     # Zod input schemas
+│   ├── <feature>.interface.ts      # TypeScript types
+│   ├── <feature>.service.ts        # Business logic & DB queries
+│   ├── <feature>.controller.ts     # catchAsync request handlers
+│   └── <feature>.route.ts          # Express router + middleware chain
+│
+├── middlewares/
+│   ├── auth.middleware.ts           # JWT verification + RBAC
+│   ├── capture.ts                   # Multer file upload handler
+│   └── purifyRequest.ts            # Input sanitization
+│
+├── jobs/
+│   ├── email.queue.ts               # OTP and password reset emails
+│   ├── fileDelete.queue.ts          # Async media cleanup
+│   ├── stripeConnect.queue.ts       # Stripe Connect onboarding
+│   ├── withdrawal.queue.ts          # Payout processing
+│   └── ticketExpiry.queue.ts        # Unpaid reservation cleanup
+│
+└── utils/
+    ├── catchAsync.ts
+    ├── ServerError.ts
+    └── redis.client.ts
 ```
 
-2. Install dependencies:
+> Every module follows a strict 5-layer pattern: `validation → interface → service → controller → route`
+
+---
+
+## Features
+
+**Core**
+- 👥 Multi-role system — Artist, Agent, Venue, Organizer with scoped permissions
+- 🎭 Full event lifecycle — `Draft → Published → Completed → Timeout`
+- 💼 Offer-based booking system with date conflict detection
+- 💳 Stripe Checkout + Stripe Connect with automated commission splits
+- 🎟️ Concurrency-safe ticket reservation with 5-minute hold and QR code generation
+- 💬 Real-time private messaging via Socket.IO
+- 📊 Per-role analytics dashboards — revenue, bookings, and monthly trends
+
+**Technical**
+- ⚡ Bull queue for async jobs — emails, payouts, file cleanup, ticket expiry
+- 🔒 JWT access + refresh token rotation
+- 🛡️ Zod validation on all inputs
+- 🔐 bcrypt password hashing + OTP account verification
+- 🐳 Fully containerized with Docker Compose
+- 🚀 GitHub Actions CI/CD pipeline
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Runtime** | Node.js 20+, TypeScript (strict) |
+| **Framework** | Express.js |
+| **Database** | PostgreSQL + Prisma ORM |
+| **Cache** | Redis |
+| **Real-time** | Socket.IO |
+| **Queue** | Bull |
+| **Payments** | Stripe Checkout, Stripe Connect |
+| **Validation** | Zod |
+| **Auth** | JWT (access + refresh rotation), bcrypt |
+| **Containerization** | Docker + Docker Compose |
+| **CI/CD** | GitHub Actions |
+
+---
+
+## Quick Start
 
 ```bash
+# Clone the repository
+git clone https://github.com/shaishab316/eventivate.git
+cd eventivate
+
+# Install dependencies
 npm install
-```
 
-3. Configure environment variables:
+# Configure environment
+npm run seed-env
 
-> This project uses [dotenvx](https://dotenvx.com) for secure environment variable
+# Run migrations
+npx prisma migrate dev
 
-```bash
-cp .env.example .env
-#or if you have right .env.keys file, then run:
-npm run env-decrypt
-```
-
-4. Set up the database:
-
-```bash
-npm run prisma-generate
-npm run prisma-migrate
-```
-
-5. Seed initial data (optional):
-
-```bash
-npm run seed-admin     # Create admin user
-npm run seed-stripe    # Set up Stripe webhooks
-```
-
-6. Start the development server:
-
-```bash
-docker-compose up -d # optional, for postgres and redis
+# Start development server
 npm run dev
 ```
 
-## 🚀 Available Scripts
+### Docker
 
 ```bash
-npm run dev              # Start development server with hot reload
-npm run build            # Build for production
-npm run start            # Start production server
-npm run lint             # Run ESLint
-npm run prettier         # Format code with Prettier
-npm run type-check       # TypeScript type checking
-npm run prisma-studio    # Open Prisma Studio
-npm run prisma-migrate   # Run database migrations
-npm run prisma-generate  # Generate Prisma Client
-npm run new-module       # Generate new module scaffold
+docker-compose up --build
 ```
 
-### [📝 Api Documentation](./postman/collections/34549363-df5de993-81f2-423d-bf12-3043cc55f41d.json)
+Services: API `3000`, PostgreSQL `5432`, Redis `6379`.
 
-## 👨‍💻 Author
+---
 
-**Shaishab Chandra Shil**
+## Author
 
-- GitHub: [@shaishab316](https://github.com/shaishab316)
-- Repository: [getavails-server](https://github.com/shaishab316/getavails-server)
+**Shaishab Chandra Shil**  
+Self-taught Backend Developer · Dhaka, Bangladesh
 
-## 🙏 Acknowledgments
+[![GitHub](https://img.shields.io/badge/GitHub-shaishab316-181717?style=flat-square&logo=github)](https://github.com/shaishab316)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-shaishab316-0A66C2?style=flat-square&logo=linkedin)](https://linkedin.com/in/shaishab316)
 
-- Built with [express-it](https://github.com/shaishab316/express-it) template
+---
+
+<div align="center">
+
+*Built with persistence, raw documentation, and zero tutorials.* 🔥
+
+</div>
