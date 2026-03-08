@@ -1,6 +1,6 @@
 <div align="center">
 
-<img width="1299" height="585" alt="image" src="https://github.com/user-attachments/assets/16eeff29-d54a-4580-b7b4-ee01fe7ff67d" />
+<img width="1469" height="846" alt="image" src="https://github.com/user-attachments/assets/28a2a7a4-8dfe-4ba7-a14a-0925776bcb59" />
 
 **Comprehensive Event Management Platform**
 
