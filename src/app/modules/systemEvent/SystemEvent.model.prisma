@@ -1,0 +1,23 @@
+model SystemEvent {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  venue_id String?
+  name     String
+
+  source     SystemSource
+  source_id  String
+  source_url String
+
+  address   String
+  latitude  Float  @map("lat")
+  longitude Float  @map("lng")
+
+  venue            SystemVenue?           @relation(fields: [venue_id], references: [id], onDelete: SetNull)
+  event_performers SystemEventPerformer[]
+
+  @@unique([source, source_id])
+  @@index([latitude, longitude])
+  @@map("systemEvents")
+}

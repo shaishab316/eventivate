@@ -239,6 +239,17 @@ const config = {
       },
     ),
   },
+
+  seatgeek: {
+    client_id: env('seatgeek client id', `seatgeek_client_id`, {
+      regex: '^.{5,}$',
+      up: 'SeatGeek info - start',
+    }),
+    client_secret: env('seatgeek client secret', genSecret(18), {
+      regex: '^.{10,}$',
+      down: 'SeatGeek info - end',
+    }),
+  },
 };
 
 export default config as Readonly<typeof config>;

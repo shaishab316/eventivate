@@ -1,0 +1,19 @@
+model SystemPerformer {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  name  String
+  image String
+
+  score Float?
+
+  source     SystemSource
+  source_id  String
+  source_url String
+
+  event_performers SystemEventPerformer[]
+
+  @@unique([source, source_id], name: "system_performer_source_id_key")
+  @@map("system_performers")
+}
