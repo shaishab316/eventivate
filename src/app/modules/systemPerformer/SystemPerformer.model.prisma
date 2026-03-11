@@ -13,7 +13,36 @@ model SystemPerformer {
   source_url String
 
   event_performers SystemEventPerformer[]
+  performer_genres SystemPerformerGenre[]
 
   @@unique([source, source_id])
   @@map("system_performers")
+}
+
+model SystemGenre {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  source    SystemSource
+  source_id String
+
+  name             String
+  slug             String
+  image            String
+  performer_genres SystemPerformerGenre[]
+
+  @@unique([source, source_id])
+  @@map("system_genres")
+}
+
+model SystemPerformerGenre {
+  performer_id String
+  genre_id     String
+
+  performer SystemPerformer @relation(fields: [performer_id], references: [id], onDelete: Cascade)
+  genre     SystemGenre     @relation(fields: [genre_id], references: [id], onDelete: Cascade)
+
+  @@id([performer_id, genre_id])
+  @@map("system_performer_genres")
 }

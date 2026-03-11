@@ -1,4 +1,5 @@
 import { SystemEventServices } from '../systemEvent/SystemEvent.service';
+import { SystemPerformerServices } from '../systemPerformer/SystemPerformer.service';
 import { SystemVenueServices } from '../systemVenue/SystemVenue.service';
 import type { SGEventsResponse } from './SeatGeek.interface';
 import { seatGeekClient } from './SeatGeek.lib';
@@ -65,6 +66,44 @@ export const SeatGeekServices = {
       console.log(
         `Created/Updated event: ${event.name} (ID: ${event.id}) at venue: ${venue.name} (ID: ${venue.id})`,
       );
+
+      for (const performerSG of eventSG.performers) {
+        console.log(
+          `Processing performer: ${performerSG.name} (ID: ${performerSG.id}) for event: ${event.name} (ID: ${event.id})`,
+        );
+
+        const performer =
+          await SystemPerformerServices.createOrUpdateSystemPerformer({
+            name: performerSG.name,
+            source: 'seatgeek',
+            source_id: performerSG.id.toString(),
+            source_url: performerSG.url,
+            image: performerSG.images.huge ?? performerSG.image,
+            score: performerSG.score,
+          });
+
+        if (performerSG.genres?.length) {
+          for (const genreSG of performerSG.genres) {
+            console.log(
+              `Processing genre: ${genreSG.name} for performer: ${performer.name} (ID: ${performer.id})`,
+            );
+
+            const genre =
+              await SystemPerformerServices.createOrUpdateSystemGenre({
+                name: genreSG.name,
+                source: 'seatgeek',
+                source_id: genreSG.id.toString(),
+                image: genreSG.images.huge ?? genreSG.image,
+                slug: genreSG.slug,
+              });
+
+            await SystemPerformerServices.createOrGetSystemPerformerGenre({
+              performer_id: performer.id,
+              genre_id: genre.id,
+            });
+          }
+        }
+      }
     }
   },
 };
