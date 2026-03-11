@@ -11,16 +11,15 @@ model SystemVenue {
   state     String
   zip       String @map("postal_code")
   country   String
-  latitude  Float  @map("lat")
-  longitude Float  @map("lng")
+  latitude  Float  @default(0) @map("lat")
+  longitude Float  @default(0) @map("lng")
 
-  capacity Int
+  capacity Int    @default(0)
   score    Float?
 
-  source      SystemSource
-  source_id   String
-  source_slug String
-  source_url  String
+  source     SystemSource
+  source_id  String
+  source_url String
 
   events SystemEvent[]
 

@@ -14,6 +14,6 @@ model SystemPerformer {
 
   event_performers SystemEventPerformer[]
 
-  @@unique([source, source_id], name: "system_performer_source_id_key")
+  @@unique([source, source_id])
   @@map("system_performers")
 }

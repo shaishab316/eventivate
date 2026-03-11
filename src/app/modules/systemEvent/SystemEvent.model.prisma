@@ -10,9 +10,14 @@ model SystemEvent {
   source_id  String
   source_url String
 
+  //? location details
   address   String
-  latitude  Float  @map("lat")
-  longitude Float  @map("lng")
+  city      String
+  state     String
+  zip       String @map("postal_code")
+  country   String
+  latitude  Float  @default(0) @map("lat")
+  longitude Float  @default(0) @map("lng")
 
   venue            SystemVenue?           @relation(fields: [venue_id], references: [id], onDelete: SetNull)
   event_performers SystemEventPerformer[]
