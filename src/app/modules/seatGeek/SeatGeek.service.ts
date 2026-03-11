@@ -80,6 +80,8 @@ export const SeatGeekServices = {
             source_url: performerSG.url,
             image: performerSG.images.huge ?? performerSG.image,
             score: performerSG.score,
+
+            event_id: event.id, //? connect performer to event in the same step
           });
 
         if (performerSG.genres?.length) {
