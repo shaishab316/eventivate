@@ -29,5 +29,5 @@ model SystemVenue {
 }
 
 enum SystemSource {
-  SEATGEEK @map("seatgeek")
+  SEATGEEK
 }

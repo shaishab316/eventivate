@@ -6,5 +6,5 @@ model SystemEventPerformer {
   performer SystemPerformer @relation(fields: [performer_id], references: [id], onDelete: Cascade)
 
   @@id([event_id, performer_id])
-  @@map("systemEventPerformers")
+  @@map("system_event_performers")
 }

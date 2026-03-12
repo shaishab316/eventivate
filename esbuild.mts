@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import chalk from 'chalk';
 import { build } from 'esbuild';
-import { nodeExternalsPlugin } from 'esbuild-node-externals';
 
 const startTime = performance.now();
 
@@ -12,9 +11,9 @@ await build({
   target: ['node24'],
   format: 'esm',
   outfile: 'dist/server.js',
-  sourcemap: false,
-  minify: true,
-  plugins: [nodeExternalsPlugin()],
+  sourcemap: true,
+  minify: false,
+  packages: 'external',
 });
 
 const endTime = performance.now();
