@@ -1,4 +1,7 @@
-import { type Prisma, prisma } from '../../../utils/db';
+import { haversine } from '../../../helpers/haversine';
+import { Prisma, prisma, SystemVenue } from '../../../utils/db';
+import { TPagination } from '../../../utils/server/serveResponse';
+import { TSearchSystemVenuesPayload } from './SystemVenue.interface';
 
 export const SystemVenueServices = {
   /**
@@ -19,5 +22,71 @@ export const SystemVenueServices = {
     });
 
     return venue;
+  },
+
+  async searchSystemVenues({
+    page,
+    limit,
+    search,
+    location_lat,
+    location_lng,
+    radius_mi,
+  }: TSearchSystemVenuesPayload) {
+    const offset = (page - 1) * limit;
+    const hasLocation = location_lat != undefined && location_lng != undefined;
+
+    // ─── build conditions dynamically — add new filters here only ───────────────
+    const conditions: Prisma.Sql[] = [];
+
+    if (search) {
+      conditions.push(Prisma.sql`name ILIKE ${'%' + search + '%'}`);
+    }
+
+    if (hasLocation) {
+      const latDelta = radius_mi / 69;
+      const lngDelta =
+        radius_mi / (69 * Math.cos(location_lat * (Math.PI / 180)));
+
+      conditions.push(
+        Prisma.sql`lat BETWEEN ${location_lat - latDelta} AND ${location_lat + latDelta}`,
+      );
+      conditions.push(
+        Prisma.sql`lng BETWEEN ${location_lng - lngDelta} AND ${location_lng + lngDelta}`,
+      );
+      conditions.push(
+        Prisma.sql`${haversine(location_lat, location_lng)} <= ${radius_mi}`,
+      );
+    }
+
+    const where = conditions.length
+      ? Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`
+      : Prisma.sql``;
+    const select = hasLocation
+      ? Prisma.sql`*, ${haversine(location_lat, location_lng)} AS distance_mi`
+      : Prisma.sql`*`;
+    const orderBy = hasLocation
+      ? Prisma.sql`ORDER BY distance_mi ASC`
+      : Prisma.sql`ORDER BY created_at DESC`;
+
+    const [venues, [{ total }]] = await Promise.all([
+      prisma.$queryRaw<
+        SystemVenue[]
+      >`SELECT ${select} FROM system_venues ${where} ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+      prisma.$queryRaw<
+        [{ total: bigint }]
+      >`SELECT COUNT(*) AS total FROM system_venues ${where}`,
+    ]);
+
+    return {
+      meta: {
+        pagination: {
+          page,
+          limit,
+          total: Number(total),
+          totalPages: Math.ceil(Number(total) / limit),
+        } satisfies TPagination,
+      },
+      venues,
+    };
   },
 };
