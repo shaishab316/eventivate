@@ -70,4 +70,10 @@ export const SystemPerformerServices = {
       data: payload,
     });
   },
+
+  async getAllGenres() {
+    const genres = await prisma.systemGenre.findMany();
+
+    return genres.map(g => g.slug);
+  },
 };
