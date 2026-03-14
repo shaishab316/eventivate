@@ -1,5 +1,8 @@
 import catchAsync from '../../middlewares/catchAsync';
-import { TSearchSystemVenues } from './SystemVenue.interface';
+import {
+  TCreateSystemVenue,
+  TSearchSystemVenues,
+} from './SystemVenue.interface';
 import { SystemVenueServices } from './SystemVenue.service';
 
 export const SystemVenueControllers = {
@@ -11,6 +14,15 @@ export const SystemVenueControllers = {
       message: 'System venues retrieved successfully',
       meta,
       data: venues,
+    };
+  }),
+
+  createVenue: catchAsync<TCreateSystemVenue>(async ({ body }) => {
+    const data = await SystemVenueServices.createVenue(body);
+
+    return {
+      message: 'System venue created successfully',
+      data,
     };
   }),
 };

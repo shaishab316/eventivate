@@ -2,8 +2,22 @@ import { Router } from 'express';
 import purifyRequest from '../../middlewares/purifyRequest';
 import { SystemVenueValidations } from './SystemVenue.validation';
 import { SystemVenueControllers } from './SystemVenue.controller';
+import capture from '../../middlewares/capture';
 
 const router = Router();
+
+router.post(
+  '/',
+  capture({
+    image_url: {
+      fileType: 'images',
+      size: 15 * 1024 * 1024, // 15MB
+      maxCount: 1,
+    },
+  }),
+  purifyRequest(SystemVenueValidations.createVenue),
+  SystemVenueControllers.createVenue,
+);
 
 router.get(
   '/search-venues',

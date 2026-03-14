@@ -20,8 +20,8 @@ model SystemVenue {
   image_url String?
 
   source     SystemSource
-  source_id  String
-  source_url String
+  source_id  String?
+  source_url String?
 
   events SystemEvent[]
 
@@ -32,4 +32,5 @@ model SystemVenue {
 
 enum SystemSource {
   SEATGEEK
+  ADMIN_CREATED
 }

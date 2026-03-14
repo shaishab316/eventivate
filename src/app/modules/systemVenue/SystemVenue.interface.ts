@@ -6,3 +6,9 @@ export type TSearchSystemVenues = z.infer<
 >;
 
 export type TSearchSystemVenuesPayload = TSearchSystemVenues['query'];
+
+export type TCreateSystemVenue = z.infer<
+  typeof SystemVenueValidations.createVenue
+>;
+
+export type TCreateSystemVenuePayload = TCreateSystemVenue['body'];

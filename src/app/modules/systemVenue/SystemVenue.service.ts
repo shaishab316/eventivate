@@ -4,7 +4,10 @@ import { Prisma, prisma, SystemVenue } from '../../../utils/db';
 import { errorLogger } from '../../../utils/logger';
 import { TPagination } from '../../../utils/server/serveResponse';
 import { downloadFile } from '../../middlewares/capture';
-import { TSearchSystemVenuesPayload } from './SystemVenue.interface';
+import {
+  TCreateSystemVenuePayload,
+  TSearchSystemVenuesPayload,
+} from './SystemVenue.interface';
 
 export const SystemVenueServices = {
   /**
@@ -17,7 +20,7 @@ export const SystemVenueServices = {
       where: {
         source_source_id: {
           source: payload.source,
-          source_id: payload.source_id,
+          source_id: payload.source_id!,
         },
       },
       update: payload,
@@ -161,5 +164,21 @@ export const SystemVenueServices = {
       acc[e.venue_id][e.date] = e.name;
       return acc;
     }, {});
+  },
+
+  async createVenue({
+    location_lat,
+    location_lng,
+    ...payload
+  }: TCreateSystemVenuePayload) {
+    const newVenue = await prisma.systemVenue.create({
+      data: {
+        ...payload,
+        latitude: location_lat,
+        longitude: location_lng,
+      },
+    });
+
+    return newVenue;
   },
 };
