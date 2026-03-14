@@ -250,6 +250,12 @@ const config = {
       down: 'SeatGeek info - end',
     }),
   },
+
+  google_map_api_key: env('google map api key', `google_map_api_key`, {
+    regex: '^.{10,}$',
+    up: 'Google Map API - start',
+    down: 'Google Map API - end',
+  }),
 };
 
 export default config as Readonly<typeof config>;

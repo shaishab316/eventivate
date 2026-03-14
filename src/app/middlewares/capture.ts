@@ -11,7 +11,6 @@ import { createWriteStream, existsSync } from 'fs';
 import ora from 'ora';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
-import { capitalize } from '../../utils/transform/capitalize';
 
 export const fileValidators = {
   images: {
@@ -27,6 +26,9 @@ export const fileValidators = {
     validator: /(pdf|word|excel|text)/,
   },
   any: {
+    validator: /.*/,
+  },
+  system: {
     validator: /.*/,
   },
 } as const;
@@ -313,6 +315,9 @@ export const fileExists = async (fileUrl: string): Promise<boolean> => {
   }
 };
 
+/**
+ * Download file from URL and save to disk, returning the new file URL
+ */
 export async function downloadFile({
   fileType,
   url,
@@ -320,39 +325,32 @@ export async function downloadFile({
   url?: string | null;
   fileType: (typeof fileTypes)[number];
 }) {
-  if (!url) return;
+  if (!url) return null;
 
-  const spinner = ora(`Downloading ${fileType} from: ${url}`).start();
-  try {
-    const fileName = `${uuidv4()}.png`;
-    const destinationPath = path.join(UPLOAD_DIR, fileType, fileName);
+  // detect extension from Content-Type header
+  const response = await axios({ url, responseType: 'stream' });
+  const contentType = response.headers['content-type'] ?? 'image/jpeg';
+  const ext = contentType.split('/')[1]?.split(';')[0] ?? 'jpg'; // image/jpeg → jpg
 
-    const response = await axios({
-      url,
-      responseType: 'stream',
-    });
+  const fileName = `${uuidv4()}.${ext}`;
+  const dir = path.join(UPLOAD_DIR, fileType);
+  const destinationPath = path.join(dir, fileName);
 
-    const writer = createWriteStream(destinationPath);
+  // ensure directory exists
+  await fs.mkdir(dir, { recursive: true });
 
-    response.data.pipe(writer);
+  const writer = createWriteStream(destinationPath);
+  response.data.pipe(writer);
 
-    await new Promise((resolve, reject) => {
-      writer.on('finish', () => resolve(true));
-      writer.on('error', reject);
-    });
+  await new Promise<void>((resolve, reject) => {
+    writer.on('finish', resolve);
+    writer.on('error', reject);
+  }).catch(async err => {
+    // clean up partial file on failure
+    await fs.unlink(destinationPath).catch(() => {}); // ignore if file doesn't exist
+    throw err;
+  });
 
-    spinner.succeed(
-      chalk.green(
-        `${capitalize(fileType)} downloaded successfully: ${destinationPath}`,
-      ),
-    );
-
-    return `/${fileType}/${fileName}`;
-  } catch (error) {
-    if (error instanceof Error) {
-      spinner.fail(chalk.red(`Error downloading ${fileType}`));
-      logger.error(error.message);
-    }
-    throw error;
-  }
+  logger.info(`Downloaded ${fileType}: ${destinationPath}`);
+  return `/${fileType}/${fileName}`;
 }

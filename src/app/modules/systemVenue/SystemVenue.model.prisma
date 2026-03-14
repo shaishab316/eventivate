@@ -17,6 +17,8 @@ model SystemVenue {
   capacity Int    @default(0)
   score    Float?
 
+  image_url String?
+
   source     SystemSource
   source_id  String
   source_url String
