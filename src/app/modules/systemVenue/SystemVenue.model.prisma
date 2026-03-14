@@ -6,13 +6,13 @@ model SystemVenue {
   name String
 
   //? location details
-  address   String
-  city      String
-  state     String
-  zip       String @map("postal_code")
-  country   String
-  latitude  Float  @default(0) @map("lat")
-  longitude Float  @default(0) @map("lng")
+  address   String?
+  city      String?
+  state     String?
+  zip       String? @map("postal_code")
+  country   String?
+  latitude  Float?  @default(0) @map("lat")
+  longitude Float?  @default(0) @map("lng")
 
   capacity Int    @default(0)
   score    Float?

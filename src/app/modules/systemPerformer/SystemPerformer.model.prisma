@@ -4,7 +4,7 @@ model SystemPerformer {
   updated_at DateTime @updatedAt
 
   name  String
-  image String
+  image String?
 
   score Float?
 
@@ -29,7 +29,7 @@ model SystemGenre {
 
   name             String
   slug             String
-  image            String
+  image            String?
   performer_genres SystemPerformerGenre[]
 
   @@unique([source, source_id])
