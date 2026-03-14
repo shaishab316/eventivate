@@ -133,9 +133,7 @@ const capture = (fields: UploadFields) =>
 export default capture;
 
 /**
- * Delete file from local disk (optimized with async)
- *
- * @deprecated use {@link deleteFilesQueue}
+ * Delete file from local disk
  */
 export const deleteFile = async (filename: string): Promise<boolean> => {
   const sanitizedFilename = path.basename(filename);

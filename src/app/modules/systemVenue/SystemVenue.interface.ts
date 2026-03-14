@@ -12,3 +12,9 @@ export type TCreateSystemVenue = z.infer<
 >;
 
 export type TCreateSystemVenuePayload = TCreateSystemVenue['body'];
+
+export type TUpdateSystemVenue = z.infer<
+  typeof SystemVenueValidations.updateVenue
+>;
+
+export type TUpdateSystemVenuePayload = TUpdateSystemVenue['body'];

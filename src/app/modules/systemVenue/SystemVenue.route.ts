@@ -19,6 +19,19 @@ router.post(
   SystemVenueControllers.createVenue,
 );
 
+router.patch(
+  '/',
+  capture({
+    image_url: {
+      fileType: 'images',
+      size: 15 * 1024 * 1024, // 15MB
+      maxCount: 1,
+    },
+  }),
+  purifyRequest(SystemVenueValidations.updateVenue),
+  SystemVenueControllers.updateVenue,
+);
+
 router.get(
   '/search-venues',
   purifyRequest(SystemVenueValidations.searchVenues),

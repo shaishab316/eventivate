@@ -1,12 +1,15 @@
+import { StatusCodes } from 'http-status-codes';
+import ServerError from '../../../errors/ServerError';
 import { haversine } from '../../../helpers/haversine';
 import { fetchVenueImage } from '../../../lib/google-places';
 import { Prisma, prisma, SystemVenue } from '../../../utils/db';
 import { errorLogger } from '../../../utils/logger';
-import { TPagination } from '../../../utils/server/serveResponse';
-import { downloadFile } from '../../middlewares/capture';
-import {
+import type { TPagination } from '../../../utils/server/serveResponse';
+import { deleteFile, downloadFile } from '../../middlewares/capture';
+import type {
   TCreateSystemVenuePayload,
   TSearchSystemVenuesPayload,
+  TUpdateSystemVenuePayload,
 } from './SystemVenue.interface';
 
 export const SystemVenueServices = {
@@ -166,19 +169,37 @@ export const SystemVenueServices = {
     }, {});
   },
 
-  async createVenue({
-    location_lat,
-    location_lng,
-    ...payload
-  }: TCreateSystemVenuePayload) {
+  async createVenue(payload: TCreateSystemVenuePayload) {
     const newVenue = await prisma.systemVenue.create({
-      data: {
-        ...payload,
-        latitude: location_lat,
-        longitude: location_lng,
-      },
+      data: payload,
     });
 
     return newVenue;
+  },
+
+  async updateVenue({ venue_id, ...payload }: TUpdateSystemVenuePayload) {
+    const oldVenue = await prisma.systemVenue.findUnique({
+      where: { id: venue_id },
+    });
+
+    if (!oldVenue) {
+      throw new ServerError(StatusCodes.NOT_FOUND, 'Venue not found');
+    }
+
+    const updatedVenue = await prisma.systemVenue.update({
+      where: { id: venue_id },
+      data: payload,
+    });
+
+    if (payload.image_url && oldVenue.image_url) {
+      deleteFile(oldVenue.image_url).catch(err => {
+        errorLogger.error(
+          `[deleteFile] failed to delete old image for venue ${venue_id}: %O`,
+          err,
+        );
+      });
+    }
+
+    return updatedVenue;
   },
 };
