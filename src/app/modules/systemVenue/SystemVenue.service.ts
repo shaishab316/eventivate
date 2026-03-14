@@ -101,6 +101,11 @@ export const SystemVenueServices = {
       >`SELECT COUNT(*) AS total FROM system_venues ${where}`,
     ]);
 
+    const venueIds = venues.map(v => v.id);
+    const bookedDatesMap = venueIds.length
+      ? await this.getVenueBookedDatesBatch(venueIds)
+      : {};
+
     return {
       meta: {
         pagination: {
@@ -110,7 +115,51 @@ export const SystemVenueServices = {
           totalPages: Math.ceil(Number(total) / limit),
         } satisfies TPagination,
       },
-      venues,
+      venues: await Promise.all(
+        venues.map(async v => ({
+          ...v,
+          booked_dates: bookedDatesMap[v.id] ?? {},
+        })),
+      ),
     };
+  },
+
+  async getVenueBookedDatesBatch(
+    venueIds: string[],
+  ): Promise<Record<string, Record<string, string>>> {
+    if (!venueIds.length) return {};
+
+    const now = new Date();
+    const from = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+    const to = new Date(
+      now.getFullYear(),
+      now.getMonth() + 2,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    const events = await prisma.$queryRaw<
+      { venue_id: string; date: string; name: string }[]
+    >`
+    SELECT
+      venue_id,
+      TO_CHAR(date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS date,
+      name
+    FROM system_events
+    WHERE venue_id = ANY(${venueIds}::text[])
+      AND date     >= ${from}
+      AND date     <= ${to}
+      AND date     IS NOT NULL
+    ORDER BY date ASC
+  `;
+
+    return events.reduce<Record<string, Record<string, string>>>((acc, e) => {
+      acc[e.venue_id] ??= {};
+      acc[e.venue_id][e.date] = e.name;
+      return acc;
+    }, {});
   },
 };

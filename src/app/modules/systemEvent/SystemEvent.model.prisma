@@ -19,6 +19,8 @@ model SystemEvent {
   latitude  Float?  @default(0) @map("lat")
   longitude Float?  @default(0) @map("lng")
 
+  date DateTime?
+
   venue            SystemVenue?           @relation(fields: [venue_id], references: [id], onDelete: SetNull)
   event_performers SystemEventPerformer[]
 

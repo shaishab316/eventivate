@@ -12,7 +12,8 @@ let job: ScheduledTask | null = null;
 // const MAX_ERROR_COUNT = 10;
 
 // for testing purposes, run every minute with fewer items per page
-const CRON_EXPRESSION = '*/1 * * * *';
+// const CRON_EXPRESSION = '*/1 * * * *';
+const CRON_EXPRESSION = '*/1 1-3 * * *'; //? for testing, run every minute during 1-3am when traffic is low
 const PER_PAGE = 5;
 const MAX_ERROR_COUNT = 10;
 

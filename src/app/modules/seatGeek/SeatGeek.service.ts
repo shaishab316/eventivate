@@ -128,6 +128,11 @@ function buildEventPayload(eventSG: SGEvent, venueId: string) {
     source: SystemSource.SEATGEEK,
     source_id: eventSG.id.toString(),
     source_url: eventSG.url,
+    date: new Date(
+      eventSG.datetime_utc.endsWith('Z')
+        ? eventSG.datetime_utc
+        : eventSG.datetime_utc + 'Z',
+    ),
   } satisfies Parameters<
     typeof SystemEventServices.createOrUpdateSystemEvent
   >[0];
