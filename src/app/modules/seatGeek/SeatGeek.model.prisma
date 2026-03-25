@@ -1,0 +1,12 @@
+model SeatGeekSyncState {
+  id String @id @default(uuid()) @db.Uuid
+
+  imported_event_count Int @default(0)
+  required_event_count Int @default(0)
+  total_event_count    Int @default(0)
+
+  sync_progress  Float     @default(0)
+  last_synced_at DateTime?
+
+  @@map("seat_geek_config")
+}

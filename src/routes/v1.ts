@@ -23,6 +23,9 @@ import { OfferRoutes } from '../app/modules/offer/Offer.route';
 import { CalendarRoutes } from '../app/modules/calendar/Calendar.route';
 import { OfferpostRoutes } from '../app/modules/offerpost/Offerpost.route';
 import { ContextPageRoutes } from '../app/modules/contextPage/ContextPage.route';
+import { SystemEventRoutes } from '../app/modules/systemEvent/SystemEvent.route';
+import { SystemVenueRoutes } from '../app/modules/systemVenue/SystemVenue.route';
+import { SystemPerformerRoutes } from '../app/modules/systemPerformer/SystemPerformer.route';
 
 const appRouter = Router();
 
@@ -65,6 +68,9 @@ export default injectRoutes(appRouter, {
   '/mails': [MailRoutes.free],
   '/subscriptions': [SubscriptionRoutes.free],
   '/offer-posts': [OfferpostRoutes],
+  '/system-events': [SystemEventRoutes],
+  '/system-venues': [SystemVenueRoutes],
+  '/system-performers': [SystemPerformerRoutes],
 
   // all user can access
   '/profile': [auth.default, UserRoutes.all],

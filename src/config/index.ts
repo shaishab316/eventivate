@@ -239,6 +239,23 @@ const config = {
       },
     ),
   },
+
+  seatgeek: {
+    client_id: env('seatgeek client id', `seatgeek_client_id`, {
+      regex: '^.{5,}$',
+      up: 'SeatGeek info - start',
+    }),
+    client_secret: env('seatgeek client secret', genSecret(18), {
+      regex: '^.{10,}$',
+      down: 'SeatGeek info - end',
+    }),
+  },
+
+  google_map_api_key: env('google map api key', `google_map_api_key`, {
+    regex: '^.{10,}$',
+    up: 'Google Map API - start',
+    down: 'Google Map API - end',
+  }),
 };
 
 export default config as Readonly<typeof config>;

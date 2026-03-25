@@ -1,0 +1,36 @@
+model SystemVenue {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  name String
+
+  //? location details
+  address   String?
+  city      String?
+  state     String?
+  zip       String? @map("postal_code")
+  country   String?
+  latitude  Float?  @default(0) @map("lat")
+  longitude Float?  @default(0) @map("lng")
+
+  capacity Int    @default(0)
+  score    Float?
+
+  image_url String?
+
+  source     SystemSource
+  source_id  String?
+  source_url String?
+
+  events SystemEvent[]
+
+  @@unique([source, source_id])
+  @@index([latitude, longitude])
+  @@map("system_venues")
+}
+
+enum SystemSource {
+  SEATGEEK
+  ADMIN_CREATED
+}
