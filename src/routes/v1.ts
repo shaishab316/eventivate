@@ -26,6 +26,7 @@ import { ContextPageRoutes } from '../app/modules/contextPage/ContextPage.route'
 import { SystemEventRoutes } from '../app/modules/systemEvent/SystemEvent.route';
 import { SystemVenueRoutes } from '../app/modules/systemVenue/SystemVenue.route';
 import { SystemPerformerRoutes } from '../app/modules/systemPerformer/SystemPerformer.route';
+import { OfferRequestRoutes } from '../app/modules/offerRequest/OfferRequest.route';
 
 const appRouter = Router();
 
@@ -71,6 +72,7 @@ export default injectRoutes(appRouter, {
   '/system-events': [SystemEventRoutes],
   '/system-venues': [SystemVenueRoutes],
   '/system-performers': [SystemPerformerRoutes],
+  '/offer-request': [OfferRequestRoutes.free],
 
   // all user can access
   '/profile': [auth.default, UserRoutes.all],
