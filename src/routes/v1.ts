@@ -72,7 +72,7 @@ export default injectRoutes(appRouter, {
   '/system-events': [SystemEventRoutes],
   '/system-venues': [SystemVenueRoutes],
   '/system-performers': [SystemPerformerRoutes],
-  '/offer-request': [OfferRequestRoutes.free],
+  '/offer-request': [OfferRequestRoutes],
 
   // all user can access
   '/profile': [auth.default, UserRoutes.all],

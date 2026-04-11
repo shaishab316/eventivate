@@ -4,22 +4,26 @@ import { OfferRequestValidations } from './OfferRequest.validation';
 import purifyRequest from '../../middlewares/purifyRequest';
 import auth from '../../middlewares/auth';
 
-const free = Router();
+const router = Router();
+
+/**
+ * Get all offer requests for admin - Only admin can access
+ */
+router.get(
+  '/',
+  auth.admin,
+  purifyRequest(OfferRequestValidations.getAllRequests),
+  OfferRequestControllers.getAllRequestsForAdmin,
+);
 
 /**
  * Send offer request - Everyone can access
  */
-free.post(
+router.post(
   '/send',
   auth.all,
   purifyRequest(OfferRequestValidations.send),
   OfferRequestControllers.send,
 );
 
-export const OfferRequestRoutes = {
-  /**
-   * Everyone can access
-   * @url : (base_url)/offer-request/
-   */
-  free,
-};
+export const OfferRequestRoutes = router;

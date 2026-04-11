@@ -1,8 +1,16 @@
 import z from 'zod';
 import { OfferRequestValidations } from './OfferRequest.validation';
 
-export type TOfferRequestSend = z.infer<
+export type TOfferRequestSendController = z.infer<
   typeof OfferRequestValidations.send
->['body'] & {
+>;
+
+export type TOfferRequestSendService = TOfferRequestSendController['body'] & {
   user_id: string;
 };
+
+export type TOfferRequestGetAllController = z.infer<
+  typeof OfferRequestValidations.getAllRequests
+>;
+
+export type TOfferRequestGetAllService = TOfferRequestGetAllController['query'];

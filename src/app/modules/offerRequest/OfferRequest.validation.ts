@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { OfferRequestConstants } from './OfferRequest.constant';
+
+const order_by_fields = OfferRequestConstants.order_by_fields;
 
 const _ = {
   kind: z.enum(['VENUE', 'ARTIST'], {
@@ -49,6 +52,29 @@ const _ = {
   }),
 
   system_venue_id: z.uuidv4({ error: 'System venue ID must be a valid UUID' }),
+
+  page: z.coerce
+    .number('Page must be a number')
+    .int('Page must be an integer')
+    .min(1, 'Page must be at least 1'),
+
+  limit: z.coerce
+    .number('Limit must be a number')
+    .int('Limit must be an integer')
+    .min(1, 'Limit must be at least 1')
+    .max(100, 'Limit must be at most 100'),
+
+  search: z
+    .string('Search must be a string')
+    .trim()
+    .max(100, 'Search must be at most 100 characters long'),
+
+  order_by: z.enum(
+    order_by_fields.map(field => [`+${field}`, `-${field}`]).flat() as Array<
+      | `+${(typeof order_by_fields)[number]}`
+      | `-${(typeof order_by_fields)[number]}`
+    >,
+  ),
 };
 
 export const OfferRequestValidations = {
@@ -66,6 +92,20 @@ export const OfferRequestValidations = {
       venue_name: _.venue_name.optional(),
       system_performer_id: _.system_performer_id.optional(),
       system_venue_id: _.system_venue_id.optional(),
+    }),
+  }),
+
+  getAllRequests: z.object({
+    query: z.object({
+      kind: _.kind.default('ARTIST'),
+
+      page: _.page.default(1),
+
+      limit: _.limit.default(20),
+
+      search: _.search.optional(),
+
+      order_by: _.order_by.default('-created_at'),
     }),
   }),
 };
