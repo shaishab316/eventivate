@@ -108,4 +108,18 @@ export const OfferRequestValidations = {
       order_by: _.order_by.default('-created_at'),
     }),
   }),
+
+  getMyRequests: z.object({
+    query: z.object({
+      kind: _.kind.default('ARTIST'),
+
+      page: _.page.default(1),
+
+      limit: _.limit.default(20),
+
+      search: _.search.optional(),
+
+      order_by: _.order_by.default('-created_at'),
+    }),
+  }),
 };

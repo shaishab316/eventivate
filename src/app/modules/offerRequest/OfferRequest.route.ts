@@ -16,6 +16,13 @@ router.get(
   OfferRequestControllers.getAllRequestsForAdmin,
 );
 
+router.get(
+  '/my-requests',
+  auth.all,
+  purifyRequest(OfferRequestValidations.getMyRequests),
+  OfferRequestControllers.getMyRequests,
+);
+
 /**
  * Send offer request - Everyone can access
  */

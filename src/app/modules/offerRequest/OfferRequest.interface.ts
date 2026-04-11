@@ -14,3 +14,12 @@ export type TOfferRequestGetAllController = z.infer<
 >;
 
 export type TOfferRequestGetAllService = TOfferRequestGetAllController['query'];
+
+export type TOfferRequestGetMyRequestsController = z.infer<
+  typeof OfferRequestValidations.getMyRequests
+>;
+
+export type TOfferRequestGetMyRequestsService =
+  TOfferRequestGetMyRequestsController['query'] & {
+    user_id: string;
+  };

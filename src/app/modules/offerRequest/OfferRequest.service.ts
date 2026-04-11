@@ -1,5 +1,6 @@
 import type {
   TOfferRequestGetAllService,
+  TOfferRequestGetMyRequestsService,
   TOfferRequestSendService,
 } from './OfferRequest.interface';
 import { Prisma, prisma } from '../../../utils/db';
@@ -69,6 +70,48 @@ export const OfferRequestServices = {
               avatar: true,
             },
           },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.offerRequest.count({ where: whereClause }),
+    ]);
+  },
+
+  /**
+   * Get offer requests for a specific user with pagination, filtering, and sorting
+   */
+  getMyRequests({
+    page,
+    limit,
+    kind,
+    order_by,
+    search,
+    user_id,
+  }: TOfferRequestGetMyRequestsService) {
+    const whereClause: Prisma.OfferRequestWhereInput = { kind, user_id };
+
+    const orderByField = order_by.substring(1);
+    const orderByDirection = order_by.startsWith('-') ? 'desc' : 'asc';
+
+    if (search) {
+      whereClause.OR = OfferRequestConstants.searchable_fields.map(field => ({
+        [field]: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      }));
+    }
+
+    return Promise.all([
+      prisma.offerRequest.findMany({
+        where: whereClause,
+        orderBy: {
+          [orderByField]: orderByDirection,
+        },
+        include: {
+          system_performer: true,
+          system_venue: true,
         },
         skip: (page - 1) * limit,
         take: limit,
