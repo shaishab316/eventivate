@@ -1,0 +1,38 @@
+model OfferRequest {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user_id String?
+  kind    OfferRequestKind
+
+  name  String?
+  email String?
+  phone String?
+
+  date DateTime?
+  time DateTime?
+
+  budget String?
+
+  additional_info String?
+
+  artist_name String?
+  venue_name  String?
+
+  system_performer_id String?
+  system_venue_id     String?
+
+  user             User?            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  system_performer SystemPerformer? @relation(fields: [system_performer_id], references: [id], onDelete: SetNull)
+  system_venue     SystemVenue?     @relation(fields: [system_venue_id], references: [id], onDelete: SetNull)
+
+  @@map("offer_requests")
+}
+
+enum OfferRequestKind {
+  VENUE
+  ARTIST
+
+  // Add more kinds as needed
+}

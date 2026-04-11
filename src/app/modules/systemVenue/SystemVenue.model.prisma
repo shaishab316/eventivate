@@ -23,7 +23,8 @@ model SystemVenue {
   source_id  String?
   source_url String?
 
-  events SystemEvent[]
+  events         SystemEvent[]
+  offer_requests OfferRequest[]
 
   @@unique([source, source_id])
   @@index([latitude, longitude])

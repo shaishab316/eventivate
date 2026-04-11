@@ -14,6 +14,7 @@ model SystemPerformer {
 
   event_performers SystemEventPerformer[]
   performer_genres SystemPerformerGenre[]
+  offer_requests   OfferRequest[]
 
   @@unique([source, source_id])
   @@map("system_performers")

@@ -72,6 +72,7 @@ model User {
   offerpost_msgs         OfferpostMsg[]
   offerpost_gigs         OfferpostGig[]
   offerpost_gig_requests OfferpostGigRequest[]
+  offer_requests         OfferRequest[]
 
   @@index([role, is_active, is_verified])
   @@index([location_lat, location_lng])
