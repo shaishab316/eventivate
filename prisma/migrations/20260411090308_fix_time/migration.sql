@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "offer_requests" ALTER COLUMN "date" SET DATA TYPE DATE,
+ALTER COLUMN "time" SET DATA TYPE TIME;

@@ -10,8 +10,8 @@ model OfferRequest {
   email String?
   phone String?
 
-  date DateTime?
-  time DateTime?
+  date DateTime? @db.Date()
+  time DateTime? @db.Time()
 
   budget String?
 

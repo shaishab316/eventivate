@@ -3,4 +3,6 @@ import { OfferRequestValidations } from './OfferRequest.validation';
 
 export type TOfferRequestSend = z.infer<
   typeof OfferRequestValidations.send
->['body'];
+>['body'] & {
+  user_id: string;
+};

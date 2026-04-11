@@ -10,7 +10,11 @@ export const OfferRequestServices = {
    */
   async send(data: TOfferRequestSend) {
     const offerRequest = await prisma.offerRequest.create({
-      data,
+      data: {
+        ...data,
+        date: data.date ? new Date(data.date) : null,
+        time: data.time ? new Date(`1970-01-01T${data.time}`) : null,
+      },
       include: {
         system_performer: true,
         system_venue: true,
