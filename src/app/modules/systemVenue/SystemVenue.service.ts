@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import ServerError from '../../../errors/ServerError';
 import { haversine } from '../../../helpers/haversine';
-import { fetchVenueImage } from '../../../lib/google-places';
 import { Prisma, prisma, SystemVenue } from '../../../utils/db';
 import { errorLogger } from '../../../utils/logger';
 import type { TPagination } from '../../../utils/server/serveResponse';
@@ -29,27 +28,6 @@ export const SystemVenueServices = {
       update: payload,
       create: payload,
     });
-
-    if (!venue.image_url) {
-      // fire-and-forget
-      fetchVenueImage(venue.name, venue.latitude, venue.longitude)
-        .then(async url => {
-          const filePath = await downloadFile({ url, fileType: 'system' });
-
-          if (!filePath) return;
-
-          await prisma.systemVenue.update({
-            where: { id: venue.id },
-            data: { image_url: filePath },
-          });
-        })
-        .catch(err => {
-          errorLogger.error(
-            `[fetchVenueImage] failed for venue ${venue.id}: %O`,
-            err,
-          );
-        });
-    }
 
     return venue;
   },
