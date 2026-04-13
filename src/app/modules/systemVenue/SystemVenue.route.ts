@@ -38,4 +38,6 @@ router.get(
   SystemVenueControllers.searchSystemVenues,
 );
 
+router.get('/:venueId', SystemVenueControllers.getVenueById);
+
 export const SystemVenueRoutes = router;

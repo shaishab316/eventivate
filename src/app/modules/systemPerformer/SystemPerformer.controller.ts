@@ -22,4 +22,15 @@ export const SystemPerformerControllers = {
       data: performers,
     };
   }),
+
+  getPerformerById: catchAsync(async ({ params }) => {
+    const performer = await SystemPerformerServices.getPerformerById(
+      params.performerId,
+    );
+
+    return {
+      message: 'Performer retrieved successfully',
+      data: performer,
+    };
+  }),
 };

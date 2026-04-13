@@ -12,4 +12,6 @@ router.get(
   SystemPerformerControllers.searchPerformers,
 );
 
+router.get('/:performerId', SystemPerformerControllers.getPerformerById);
+
 export const SystemPerformerRoutes = router;

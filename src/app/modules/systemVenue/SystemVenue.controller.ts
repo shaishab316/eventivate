@@ -35,4 +35,13 @@ export const SystemVenueControllers = {
       data,
     };
   }),
+
+  getVenueById: catchAsync(async ({ params }) => {
+    const data = await SystemVenueServices.getVenueById(params.venueId);
+
+    return {
+      message: 'System venue retrieved successfully',
+      data,
+    };
+  }),
 };

@@ -261,4 +261,25 @@ export const SystemPerformerServices = {
       return acc;
     }, {});
   },
+
+  async getPerformerById(performerId: string) {
+    const performer = await prisma.systemPerformer.findUnique({
+      where: { id: performerId },
+    });
+
+    if (!performer) {
+      throw new Error('Performer not found');
+    }
+
+    const [bookedDatesMap, genres] = await Promise.all([
+      this.getPerformerBookedDatesBatch([performerId]),
+      this.getPerformerGenresBatch([performerId]),
+    ]);
+
+    return {
+      ...performer,
+      genres: genres[performerId]?.map(g => g.slug) ?? [],
+      booked_dates: bookedDatesMap[performerId] ?? {},
+    };
+  },
 };

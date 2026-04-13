@@ -180,4 +180,21 @@ export const SystemVenueServices = {
 
     return updatedVenue;
   },
+
+  async getVenueById(venueId: string) {
+    const venue = await prisma.systemVenue.findUnique({
+      where: { id: venueId },
+    });
+
+    if (!venue) {
+      throw new ServerError(StatusCodes.NOT_FOUND, 'Venue not found');
+    }
+
+    const booked_dates = await this.getVenueBookedDatesBatch([venueId]);
+
+    return {
+      ...venue,
+      booked_dates: booked_dates[venueId] ?? {},
+    };
+  },
 };
