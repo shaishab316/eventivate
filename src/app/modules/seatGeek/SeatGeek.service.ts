@@ -138,7 +138,11 @@ function buildEventPayload(eventSG: SGEvent, venueId: string) {
   >[0];
 }
 
-function buildPerformerPayload(performerSG: SGPerformer, eventId: string) {
+function buildPerformerPayload(
+  performerSG: SGPerformer,
+  eventId: string,
+  eventSG: SGEvent,
+) {
   return {
     name: performerSG.name,
     source: SystemSource.SEATGEEK,
@@ -147,6 +151,13 @@ function buildPerformerPayload(performerSG: SGPerformer, eventId: string) {
     image: performerSG.images.huge ?? performerSG.image,
     score: performerSG.score,
     event_id: eventId, //? connect performer to event in the same step
+    address: eventSG.venue.address,
+    city: eventSG.venue.city,
+    state: eventSG.venue.state,
+    zip: eventSG.venue.postal_code,
+    country: eventSG.venue.country,
+    latitude: eventSG.venue.location.lat,
+    longitude: eventSG.venue.location.lon,
   } satisfies Parameters<
     typeof SystemPerformerServices.createOrUpdateSystemPerformer
   >[0];
@@ -200,7 +211,7 @@ async function processPerformers(
 
     const performer =
       await SystemPerformerServices.createOrUpdateSystemPerformer(
-        buildPerformerPayload(performerSG, eventId),
+        buildPerformerPayload(performerSG, eventId, eventSG),
       );
 
     await processGenres(performerSG, performer.id, performer.name);

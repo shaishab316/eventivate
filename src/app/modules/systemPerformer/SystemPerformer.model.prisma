@@ -12,6 +12,15 @@ model SystemPerformer {
   source_id  String
   source_url String
 
+  //? location details
+  address   String?
+  city      String?
+  state     String?
+  zip       String? @map("postal_code")
+  country   String?
+  latitude  Float?  @default(0) @map("lat")
+  longitude Float?  @default(0) @map("lng")
+
   event_performers SystemEventPerformer[]
   performer_genres SystemPerformerGenre[]
   offer_requests   OfferRequest[]
