@@ -40,20 +40,29 @@ function stopJob() {
   job = null;
 }
 
+function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
 // ─── Core Logic ───────────────────────────────────────────────────────────────
 
 async function isSyncComplete(): Promise<boolean> {
   const cfg = await SeatGeekServices.config();
 
   const done =
-    cfg.imported_event_count >= cfg.required_event_count ||
-    cfg.sync_progress >= 100;
+    cfg.total_event_count > 0 &&
+    (cfg.imported_event_count >= cfg.total_event_count ||
+      cfg.sync_progress >= 100);
 
   if (done) {
     debugLog(
-      `[Cron] Sync complete — imported: %d, required: %d, progress: %d%%`,
+      `[Cron] Sync complete — imported: %d, total: %d, progress: %d%%`,
       cfg.imported_event_count,
-      cfg.required_event_count,
+      cfg.total_event_count,
       cfg.sync_progress,
     );
   }
@@ -92,9 +101,21 @@ async function fetchAndProcessEvents(): Promise<void> {
 }
 
 async function processSeatGeekData(): Promise<void> {
+  const cfg = await SeatGeekServices.config();
+
+  const lastSynced = cfg.last_synced_at;
+
+  const isNewDay = !lastSynced || !isSameDay(new Date(lastSynced), new Date());
+
+  if (isNewDay) {
+    await SeatGeekServices.resetDailySync();
+    debugLog(
+      `[Cron] New day detected — resetting sync state for daily refresh.`,
+    );
+  }
+
   if (await isSyncComplete()) {
-    stopJob();
-    debugLog(`[Cron] Cron job stopped.`);
+    debugLog(`[Cron] Today's sync already complete. Skipping.`);
     return;
   }
 

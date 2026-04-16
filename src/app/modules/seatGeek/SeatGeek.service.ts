@@ -40,6 +40,21 @@ export const SeatGeekServices = {
     return _config;
   },
 
+  async resetDailySync(): Promise<void> {
+    const current = await this.config();
+
+    const updated = await prisma.seatGeekSyncState.update({
+      where: { id: current.id },
+      data: {
+        imported_event_count: 0,
+        total_event_count: 0,
+        sync_progress: 0,
+      },
+    });
+
+    _config = updated;
+  },
+
   async updateProgress(
     batchSize: number,
     totalCount: number,
