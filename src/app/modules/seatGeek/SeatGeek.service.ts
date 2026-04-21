@@ -1,9 +1,9 @@
-import { debuglog as debug } from 'node:util';
 import {
   prisma,
   type SeatGeekSyncState,
   SystemSource,
 } from '../../../utils/db';
+import { errorLogger } from '../../../utils/logger';
 import { SystemEventServices } from '../systemEvent/SystemEvent.service';
 import { SystemPerformerServices } from '../systemPerformer/SystemPerformer.service';
 import { SystemVenueServices } from '../systemVenue/SystemVenue.service';
@@ -14,11 +14,64 @@ import type {
 } from './SeatGeek.interface';
 import { seatGeekClient } from './SeatGeek.lib';
 
-const debugLog = debug('app:seatgeek:service');
+const PER_PAGE = 20;
+const DAYS_AHEAD = 40;
+const PAGE_CONCURRENCY = 3;
+const EVENT_CONCURRENCY = 5;
 
 // ─── Config Cache ─────────────────────────────────────────────────────────────
 
 let _config: SeatGeekSyncState | null = null;
+
+// ─── Run-scoped Deduplication Cache ──────────────────────────────────────────
+//
+// Promise-based maps prevent duplicate DB calls under concurrent processing.
+//
+// Problem without Promise cache:
+//   Event A and Event B both share Venue X and run concurrently.
+//   Both call cache.venues.get('venue-x') → both get undefined (promise not set yet).
+//   Both fire createORUpdateSystemVenue → 2 DB writes for identical data.
+//
+// With Promise cache:
+//   Event A misses cache → creates Promise, stores it immediately → fires DB call.
+//   Event B misses cache? No — Promise is already stored → awaits same Promise.
+//   Result: exactly 1 DB write, both get the same venue id.
+//
+// venues: safe to cache — buildVenuePayload has no event_id or performer_id.
+//         nightly reset + re-upsert keeps venue data fresh each run.
+//
+// genres: safe to cache — createOrUpdateSystemGenre has no event_id or performer_id.
+//         createOrGetSystemPerformerGenre still runs per performer (not cached)
+//         to ensure every performer→genre link is always maintained.
+//
+// performers: NOT cached — buildPerformerPayload includes event_id.
+//             Must upsert per event to:
+//             (1) keep performer data fresh (score, image, etc.)
+//             (2) create the correct event_id link for each event.
+
+interface SyncCache {
+  venues: Map<string, Promise<string>>; // sg venue source_id → Promise<db venue id>
+  genres: Map<string, Promise<string>>; // sg genre source_id → Promise<db genre id>
+}
+
+function createSyncCache(): SyncCache {
+  return {
+    venues: new Map(),
+    genres: new Map(),
+  };
+}
+
+// ─── Concurrency Util ─────────────────────────────────────────────────────────
+
+async function runConcurrent<T>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<void>,
+): Promise<void> {
+  for (let i = 0; i < items.length; i += concurrency) {
+    await Promise.all(items.slice(i, i + concurrency).map(fn));
+  }
+}
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
@@ -101,9 +154,84 @@ export const SeatGeekServices = {
   },
 
   async processEventData({ events }: SGEventsResponse): Promise<void> {
+    const cache = createSyncCache();
     for (const eventSG of events) {
-      await processEvent(eventSG);
+      await processEvent(eventSG, cache);
     }
+  },
+
+  async runFullSync(): Promise<void> {
+    await this.resetDailySync();
+
+    const now = new Date();
+    const future = new Date(now.getTime() + DAYS_AHEAD * 24 * 60 * 60 * 1000);
+
+    const dateParams = {
+      'datetime_utc.gte': now.toISOString().split('T')[0],
+      'datetime_utc.lte': future.toISOString().split('T')[0],
+    };
+
+    console.log(
+      `[Sync] Date range: %s → %s`,
+      dateParams['datetime_utc.gte'],
+      dateParams['datetime_utc.lte'],
+    );
+
+    // ── Step 1: Fetch page 1 to discover total ────────────────────────────────
+
+    const firstPage = await this.fetchSeatGeekEvents(dateParams, 1, PER_PAGE);
+    const total = firstPage.meta.total;
+    const totalPages = Math.ceil(total / PER_PAGE);
+
+    console.log(`[Sync] Total events: %d across %d pages`, total, totalPages);
+
+    // ── Step 2: Fetch remaining pages concurrently ────────────────────────────
+
+    const allEvents = [...firstPage.events];
+
+    const remainingPages = Array.from(
+      { length: totalPages - 1 },
+      (_, i) => i + 2,
+    );
+
+    await runConcurrent(remainingPages, PAGE_CONCURRENCY, async page => {
+      const data = await this.fetchSeatGeekEvents(dateParams, page, PER_PAGE);
+      allEvents.push(...data.events);
+      console.log(`[Sync] Fetched page %d / %d`, page, totalPages);
+    });
+
+    console.log(
+      `[Sync] All pages fetched. Processing %d events...`,
+      allEvents.length,
+    );
+
+    // ── Step 3: Process all events concurrently with shared cache ─────────────
+
+    const cache = createSyncCache();
+    let processed = 0;
+    let failed = 0;
+
+    await runConcurrent(allEvents, EVENT_CONCURRENCY, async eventSG => {
+      try {
+        await processEvent(eventSG, cache);
+        processed++;
+      } catch (err) {
+        failed++;
+        errorLogger.error(
+          `[Sync] Failed event "${eventSG.title}" (ID: ${eventSG.id}):`,
+          err,
+        );
+      }
+    });
+
+    await this.updateProgress(processed, total);
+
+    console.log(
+      `[Sync] Done — processed: %d, failed: %d, total available: %d`,
+      processed,
+      failed,
+      total,
+    );
   },
 };
 
@@ -184,72 +312,102 @@ async function processGenres(
   performerSG: SGPerformer,
   performerId: string,
   performerName: string,
+  cache: SyncCache,
 ) {
   if (!performerSG.genres?.length) return;
 
-  for (const genreSG of performerSG.genres) {
-    debugLog(
-      `[Genre] Processing "%s" for performer: %s (ID: %s)`,
-      genreSG.name,
-      performerName,
-      performerId,
-    );
+  await Promise.all(
+    performerSG.genres.map(async genreSG => {
+      console.log(
+        `[Genre] Processing "%s" for performer: %s (ID: %s)`,
+        genreSG.name,
+        performerName,
+        performerId,
+      );
 
-    const genre = await SystemPerformerServices.createOrUpdateSystemGenre({
-      name: genreSG.name,
-      source: SystemSource.SEATGEEK,
-      source_id: genreSG.id.toString(),
-      image: genreSG.images.huge ?? genreSG.image,
-      slug: genreSG.slug,
-    });
+      const sourceId = genreSG.id.toString();
 
-    await SystemPerformerServices.createOrGetSystemPerformerGenre({
-      performer_id: performerId,
-      genre_id: genre.id,
-    });
-  }
+      // Cache the genre upsert Promise — genre payload has no performer_id or
+      // event_id so the same DB row is always the result. Avoids N upserts for
+      // the same genre when multiple performers share it within one sync run.
+      let genrePromise = cache.genres.get(sourceId);
+      if (!genrePromise) {
+        genrePromise = SystemPerformerServices.createOrUpdateSystemGenre({
+          name: genreSG.name,
+          source: SystemSource.SEATGEEK,
+          source_id: sourceId,
+          image: genreSG.images.huge ?? genreSG.image,
+          slug: genreSG.slug,
+        }).then(g => g.id);
+        cache.genres.set(sourceId, genrePromise);
+      }
+
+      const genreId = await genrePromise;
+
+      // Always run — links this specific performer to the genre.
+      await SystemPerformerServices.createOrGetSystemPerformerGenre({
+        performer_id: performerId,
+        genre_id: genreId,
+      });
+    }),
+  );
 }
 
 async function processPerformers(
   eventSG: SGEvent,
   eventId: string,
   eventName: string,
+  cache: SyncCache,
 ) {
-  for (const performerSG of eventSG.performers) {
-    debugLog(
-      `[Performer] Processing "%s" (ID: %s) for event: %s (ID: %s)`,
-      performerSG.name,
-      performerSG.id,
-      eventName,
-      eventId,
-    );
-
-    const performer =
-      await SystemPerformerServices.createOrUpdateSystemPerformer(
-        buildPerformerPayload(performerSG, eventId, eventSG),
+  await Promise.all(
+    eventSG.performers.map(async performerSG => {
+      console.log(
+        `[Performer] Processing "%s" (ID: %s) for event: %s (ID: %s)`,
+        performerSG.name,
+        performerSG.id,
+        eventName,
+        eventId,
       );
 
-    await processGenres(performerSG, performer.id, performer.name);
-  }
+      // Performers are NOT cached — buildPerformerPayload includes event_id.
+      // Must upsert every time to: (1) keep data fresh, (2) maintain event link.
+      const performer =
+        await SystemPerformerServices.createOrUpdateSystemPerformer(
+          buildPerformerPayload(performerSG, eventId, eventSG),
+        );
+
+      await processGenres(performerSG, performer.id, performer.name, cache);
+    }),
+  );
 }
 
-async function processEvent(eventSG: SGEvent) {
-  debugLog(`[Event] Processing "%s" (ID: %s)`, eventSG.title, eventSG.id);
+async function processEvent(eventSG: SGEvent, cache: SyncCache) {
+  console.log(`[Event] Processing "%s" (ID: %s)`, eventSG.title, eventSG.id);
 
-  const venue = await SystemVenueServices.createORUpdateSystemVenue(
-    buildVenuePayload(eventSG),
-  );
+  const venueSourceId = eventSG.venue.id.toString();
+
+  // Cache the venue upsert Promise — venue payload has no event_id or
+  // performer_id so the same DB row is always the result.
+  let venuePromise = cache.venues.get(venueSourceId);
+  if (!venuePromise) {
+    venuePromise = SystemVenueServices.createORUpdateSystemVenue(
+      buildVenuePayload(eventSG),
+    ).then(v => v.id);
+    cache.venues.set(venueSourceId, venuePromise);
+  }
+
+  const venueId = await venuePromise;
+
   const event = await SystemEventServices.createOrUpdateSystemEvent(
-    buildEventPayload(eventSG, venue.id),
+    buildEventPayload(eventSG, venueId),
   );
 
-  debugLog(
-    `[Event] Upserted "%s" (ID: %s) → venue: "%s" (ID: %s)`,
+  console.log(
+    `[Event] Upserted "%s" (ID: %s) → venue ID: %s`,
     event.name,
     event.id,
-    venue.name,
-    venue.id,
+    venueId,
   );
 
-  await processPerformers(eventSG, event.id, event.name);
+  await processPerformers(eventSG, event.id, event.name, cache);
 }
