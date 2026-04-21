@@ -58,6 +58,8 @@ const validator = {
     .max(100, 'Limit must be less than or equal to 100'),
 
   venue_id: z.string('Venue ID is required'),
+
+  date: z.coerce.date(),
 };
 
 export const SystemVenueValidations = {
@@ -69,8 +71,8 @@ export const SystemVenueValidations = {
 
       search: validator.search.optional(),
 
-      // date_start: z.iso.date().optional(),
-      // date_end: z.iso.date().optional(),
+      date_start: validator.date.optional(),
+      date_end: validator.date.optional(),
 
       page: validator.page,
       limit: validator.limit.default(20),

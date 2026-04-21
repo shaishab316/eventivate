@@ -25,8 +25,8 @@ export const SystemPerformerValidations = {
         .max(255, 'Search query must be at most 255 characters long')
         .optional(),
 
-      // date_start: z.iso.date().optional(),
-      // date_end: z.iso.date().optional(),
+      date_start: z.coerce.date().optional(),
+      date_end: z.coerce.date().optional(),
 
       page: z.coerce.number().int().positive().default(1),
       limit: z.coerce

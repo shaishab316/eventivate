@@ -39,6 +39,8 @@ export const SystemVenueServices = {
     location_lat,
     location_lng,
     radius_mi,
+    date_start,
+    date_end,
   }: TSearchSystemVenuesPayload) {
     const offset = (page - 1) * limit;
     const hasLocation = location_lat != undefined && location_lng != undefined;
@@ -66,6 +68,17 @@ export const SystemVenueServices = {
       );
     }
 
+    if (date_start || date_end) {
+      const dateConds: Prisma.Sql[] = [];
+      if (date_start) dateConds.push(Prisma.sql`se.date >= ${date_start}`);
+      if (date_end) dateConds.push(Prisma.sql`se.date <= ${date_end}`);
+      conditions.push(Prisma.sql`EXISTS (
+        SELECT 1 FROM system_events se
+        WHERE se.venue_id = id
+          AND ${Prisma.join(dateConds, ' AND ')}
+      )`);
+    }
+
     const where = conditions.length
       ? Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`
       : Prisma.sql``;
@@ -87,7 +100,7 @@ export const SystemVenueServices = {
 
     const venueIds = venues.map(v => v.id);
     const bookedDatesMap = venueIds.length
-      ? await this.getVenueBookedDatesBatch(venueIds)
+      ? await this.getVenueBookedDatesBatch(venueIds, date_start, date_end)
       : {};
 
     return {
@@ -110,20 +123,16 @@ export const SystemVenueServices = {
 
   async getVenueBookedDatesBatch(
     venueIds: string[],
+    from?: Date,
+    to?: Date,
   ): Promise<Record<string, Record<string, string>>> {
     if (!venueIds.length) return {};
 
     const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
-    const to = new Date(
-      now.getFullYear(),
-      now.getMonth() + 2,
-      0,
-      23,
-      59,
-      59,
-      999,
-    );
+    const resolvedFrom =
+      from ?? new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+    const resolvedTo =
+      to ?? new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59, 999);
 
     const events = await prisma.$queryRaw<
       { venue_id: string; date: string; name: string }[]
@@ -134,8 +143,8 @@ export const SystemVenueServices = {
       name
     FROM system_events
     WHERE venue_id = ANY(${venueIds}::text[])
-      AND date     >= ${from}
-      AND date     <= ${to}
+      AND date     >= ${resolvedFrom}
+      AND date     <= ${resolvedTo}
       AND date     IS NOT NULL
     ORDER BY date ASC
   `;

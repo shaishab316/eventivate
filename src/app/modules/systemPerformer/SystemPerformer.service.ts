@@ -88,6 +88,8 @@ export const SystemPerformerServices = {
     location_lat,
     location_lng,
     radius_mi,
+    date_start,
+    date_end,
   }: TSearchSystemPerformersPayload) {
     const offset = (page - 1) * limit;
     const hasLocation = location_lat != null && location_lng != null;
@@ -127,6 +129,20 @@ export const SystemPerformerServices = {
     `);
     }
 
+    if (date_start || date_end) {
+      const dateConds: Prisma.Sql[] = [];
+      if (date_start) dateConds.push(Prisma.sql`se2.date >= ${date_start}`);
+      if (date_end) dateConds.push(Prisma.sql`se2.date <= ${date_end}`);
+      conditions.push(Prisma.sql`
+      EXISTS (
+        SELECT 1 FROM system_event_performers sep2
+        JOIN system_events se2 ON se2.id = sep2.event_id
+        WHERE sep2.performer_id = sp.id
+          AND ${Prisma.join(dateConds, ' AND ')}
+      )
+    `);
+    }
+
     const where = conditions.length
       ? Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`
       : Prisma.sql``;
@@ -160,7 +176,7 @@ export const SystemPerformerServices = {
       ]
     >([
       performerIds.length
-        ? this.getPerformerBookedDatesBatch(performerIds)
+        ? this.getPerformerBookedDatesBatch(performerIds, date_start, date_end)
         : ({} as any),
       performerIds.length
         ? this.getPerformerGenresBatch(performerIds)
@@ -186,33 +202,29 @@ export const SystemPerformerServices = {
 
   async getPerformerBookedDatesBatch(
     performerIds: string[],
+    from?: Date,
+    to?: Date,
   ): Promise<Record<string, Record<string, string>>> {
     if (!performerIds.length) return {};
 
     const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
-    const to = new Date(
-      now.getFullYear(),
-      now.getMonth() + 2,
-      0,
-      23,
-      59,
-      59,
-      999,
-    );
+    const resolvedFrom =
+      from ?? new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+    const resolvedTo =
+      to ?? new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59, 999);
 
     const events = await prisma.$queryRaw<
       { performer_id: string; date: string; name: string }[]
     >`
     SELECT
       sep.performer_id,
-      TO_CHAR(se.date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS date,
+      TO_CHAR(se.date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS date,
       se.name
     FROM system_event_performers sep
     JOIN system_events se ON se.id = sep.event_id
     WHERE sep.performer_id = ANY(${performerIds}::text[])
-      AND se.date >= ${from}
-      AND se.date <= ${to}
+      AND se.date >= ${resolvedFrom}
+      AND se.date <= ${resolvedTo}
       AND se.date IS NOT NULL
     ORDER BY se.date ASC
   `;
